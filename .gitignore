@@ -1,0 +1,5 @@
+# Ignore temporary folder
+temp/
+
+# Ignore TO DO file
+todo.md
