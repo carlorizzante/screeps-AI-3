@@ -68,14 +68,14 @@ module.exports = {
   harvesters_cap: function(room, creepsCount) {
     const haulers = creepsCount[HAULER] ? creepsCount[HAULER] : 0;
     const miners = creepsCount[MINER] ? creepsCount[MINER] : 0;
-    const tier2 =  haulers + miners * 2;
+    const tier2 =  haulers + miners;
     const sources = room.find(FIND_SOURCES_ACTIVE);
-    return 4 * sources.length - tier2;
+    return 3 * sources.length - tier2;
   },
 
   /**
     Builders are spawn only if required.
-    Range [0, 5]
+    Range [0, 4]
     */
   builders_cap: function(room) {
     // const maxEnergy = room.energyCapacityAvailable;
@@ -84,12 +84,10 @@ module.exports = {
   },
 
   /**
-    Upgraders are spawn in a max of 8,
-    reduced in number if any building is required.
+    Upgraders are reduced in number if builders are required
     Range [2, 4]
     */
   upgraders_cap: function(room) {
-    const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
     return _.max([2, 4 - this.builders_cap(room)]);
   }
 }

@@ -2,8 +2,18 @@ require("prototype.creep");
 require("prototype.spawn");
 require("prototype.tower");
 
+const reporter = require("reporter");
+
 module.exports.loop = function() {
   "use strict";
+
+  if (Game.time % 100 == 0) {
+    const rooms = {}
+    for (let key in Game.rooms) {
+      rooms[key] = Game.rooms[key];
+    }
+    reporter(rooms);
+  }
 
   /**
     Run Spawns

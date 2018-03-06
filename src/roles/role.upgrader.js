@@ -19,7 +19,7 @@ module.exports = {
       }
 
     /**
-      If out of charged and in Workroom
+      If out of charge and in Workroom
       */
     } else if (!creep.isCharged() && room == workroom) {
       const source = creep.getEnergy(useStorage, useContainers, useSources);

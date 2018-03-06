@@ -126,9 +126,10 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   @param includeExtensions Boolean
   @param includeTowers Boolean
   @param includeStorage Boolean
+  @param includeContainers Boolean
   @returns STRUCTURE
   */
-Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage) {
+Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
 
   // TODO: store targets
   delete this.memory.source_id;
@@ -145,6 +146,9 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
       || (includeTowers && s.structureType == STRUCTURE_TOWER         && s.energy < s.energyCapacity * 0.7)
       || (includeStorage && s.structureType == STRUCTURE_STORAGE      && s.store[RESOURCE_ENERGY] < s.storeCapacity)
   });
+  if (includeContainers && !structure) structure = this.pos.findClosestByPath(FIND_STRUCTURES, {
+    filter: s => (includeContainers && s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < s.storeCapacity)
+  });
 
   if (structure) this.memory.structure_id = structure.id;
   return structure;
@@ -156,10 +160,11 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
   @param includeExtensions Boolean
   @param includeTowers Boolean
   @param includeStorage Boolean
+  @param includeContainers Boolean
   @returns Boolean, true if successful, false otherwise
   */
-Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage) {
-  structure = this.findStructure(includeSpawns, includeExtensions, includeTowers, includeStorage);
+Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
+  structure = this.findStructure(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers);
   if (structure) {
     let result = this.transfer(structure, RESOURCE_ENERGY);
     if (result == ERR_NOT_IN_RANGE) result = this.moveTo(structure);
@@ -192,8 +197,8 @@ Creep.prototype.repairStructure = function(range) {
 /**
   Effects: Creep looks for a construction site and move to build it
   @returns CONSTRUCTION_SITE
+  TODO: store target_id
   */
-  // TODO: store target_id
 Creep.prototype.buildStructure = function() {
   const constructionSite = this.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
   if (constructionSite) {
@@ -202,4 +207,32 @@ Creep.prototype.buildStructure = function() {
     }
   }
   return constructionSite;
+}
+
+/**
+  Allows Creeps to move to a nearby rooms if no Energy source is available
+  Modifies creep.memory.workroom
+  @param roomname String the name of the room to use as Workroom
+  @returns Boolean, true if successful, false otherwise
+  */
+Creep.prototype.changeWorkroom = function(roomname) {
+
+  if (roomname) {
+    this.memory.workroom = roomname;
+    return this.memory.workroom == roomname;
+  }
+
+  let rooms = [];
+  const neighbourhood = Game.map.describeExits(this.room.name);
+  const myRooms = Memory.spawns;
+
+  for (let key in neighbourhood) rooms.push(neighbourhood[key]);
+
+  // Remove already owned rooms from neighbourhod
+  rooms = rooms.filter(r => myRooms.indexOf(r) < 0);
+  const newWorkroom = _.sample(rooms);
+
+  if (COMICS) this.say(newWorkroom);
+  this.memory.workroom = newWorkroom;
+  return this.memory == newWorkroom;
 }

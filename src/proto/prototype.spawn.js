@@ -99,6 +99,7 @@ StructureSpawn.prototype.logic = function() {
 StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, target_id) {
 
   let energyUsed = 0;
+  let use;
   const skills = [];
 
   /**
@@ -127,7 +128,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
     // 50% WORK
     // 25% CARRY
     // 25% MOVE
-    let use = _.min([TIER1_ENERGY_CAP, this.room.energyAvailable]);
+    use = _.min([TIER1_ENERGY_CAP, this.room.energyAvailable]);
     energyUsed += addParts(WORK, 100, Math.floor(use * 0.50), skills);
     energyUsed += addParts(CARRY, 50, Math.floor(use * 0.25), skills);
     energyUsed += addParts(MOVE,  50, Math.floor(use * 0.25), skills);
@@ -138,7 +139,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
   if (role == HAULER) {
     // 50% CARRY
     // 50% MOVE
-    let use = _.min([TIER2_ENERGY_CAP, this.room.energyAvailable]);
+    use = _.min([TIER2_ENERGY_CAP, this.room.energyAvailable]);
     energyUsed += addParts(CARRY, 50, Math.floor(use * 0.50), skills);
     energyUsed += addParts(MOVE,  50, Math.floor(use * 0.50), skills);
   }
@@ -147,7 +148,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
     // 20% WORK
     // 40% CARRY
     // 40% MOVE
-    let use = _.min([TIER2_ENERGY_CAP, this.room.energyAvailable]);
+    use = _.min([TIER2_ENERGY_CAP, this.room.energyAvailable]);
     energyUsed += addParts(WORK, 100, Math.floor(use * 0.20), skills);
     energyUsed += addParts(CARRY, 50, Math.floor(use * 0.40), skills);
     energyUsed += addParts(MOVE,  50, Math.floor(use * 0.40), skills);
@@ -157,7 +158,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
     // 5 WORK -> exhaust a 3000 Energy Source right before regeneration
     // 2 CARRY
     // 2 MOVE
-    let use = 500 + 100 + 100;
+    use = 500 + 100 + 100;
     energyUsed += addParts(WORK, 100, Math.floor(500), skills);
     energyUsed += addParts(CARRY, 50, Math.floor(100), skills);
     energyUsed += addParts(MOVE,  50, Math.floor(100), skills);
@@ -165,6 +166,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
   }
 
   // Spawn new creep
+  if (DEBUG) console.log("Using", use, "to spawn", role);
   let name = role + energyUsed + "-" + Game.time + "-" + homeroom;
   const result = Game.spawns[this.name].spawnCreep(skills, name, {
     memory: {

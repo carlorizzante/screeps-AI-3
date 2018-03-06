@@ -16,12 +16,13 @@ module.exports = {
       If charged and in Homeroom
       */
     if (creep.isCharged() && room == homeroom) {
-      const repair = creep.repairStructure(6);
-      if (!repair) creep.buildStructure();
-      upgrader.run(creep);
+      let repair, build;
+      repair = creep.repairStructure(6);
+      if (!repair) build = creep.buildStructure();
+      if (!build) upgrader.run(creep);
 
     /**
-      If out of charged and in Workroom
+      If out of charge and in Workroom
       */
     } else if (!creep.isCharged() && room == workroom) {
       const source = creep.getEnergy(useStorage, useContainers, useSources);
