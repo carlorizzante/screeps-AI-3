@@ -10,11 +10,7 @@ module.exports.loop = function() {
   "use strict";
 
   if (REPORT && Game.time % 100 == 0) {
-    const rooms = {}
-    for (let key in Game.rooms) {
-      rooms[key] = Game.rooms[key];
-    }
-    reporter(rooms);
+    reporter.report();
   }
 
   /**
@@ -36,6 +32,6 @@ module.exports.loop = function() {
     */
   const towers = _.filter(Game.structures, s => s.structureType == STRUCTURE_TOWER);
   for (let tower of towers) {
-    // tower.logic();
+    tower.logic();
   }
 }

@@ -1,12 +1,11 @@
 {
-  "name": "screeps",
-  "version": "2.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "screeps-AI-3",
+  "version": "3.4.0",
+  "description": "AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Carlo Rizzante",
   "license": "ISC",
   "devDependencies": {
     "grunt": "^1.0.2",

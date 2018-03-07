@@ -81,5 +81,25 @@ module.exports = {
     */
   upgraders_cap: function(room) {
     return _.max([2, 4 - this.builders_cap(room)]);
+  },
+
+  /**
+    Repair or maintenance on structures required
+    only below a specific limit of sustained damage.
+    */
+  repair_threshold: function() {
+    return 0.5; // 50%
+  },
+
+  /**
+    Improvement, repair or maintenance on walls and ramparts
+    required only up to a specific limit of hit points.
+    */
+  wall_repair_threshold: function() {
+    return 10000; // up 50.000 hit points
+  },
+
+  rampart_repair_threshold: function() {
+    return 10000; // up 50.000 hit points
   }
 }

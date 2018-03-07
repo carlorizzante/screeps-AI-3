@@ -25,61 +25,94 @@ const LIPERMODALU = '#0E848E';
 const GREENPEPPER = '#97963A';
 const COMEHOME    = '#F24269';
 
-module.exports = function(rooms) {
+module.exports = {
 
-  // console.log(span(SAYSHELLO, "Lorem ipsum"));
-  // console.log(span(HAPPYORANGE, "Lorem ipsum"));
-  // console.log(span(LIPERMODALU, "Lorem ipsum"));
-  // console.log(span(GREENPEPPER, "Lorem ipsum"));
-  // console.log(span(COMEHOME, "Lorem ipsum"));
+  /**
+    Effects: outputs in console a report of the current state of the rooms owned by the player
+    */
+  report: function() {
 
-  // TODO ASCII ART FOR Ry7
-  console.log(); // Give some space
-  // console.log(span(AQUAMARINE, 'Ry7'));
-  // console.log("Running", Object.keys(rooms).length, "Room(s).");
+    const rooms = {}
+    for (let key in Game.rooms) rooms[key] = Game.rooms[key];
 
-  for (let key in rooms) {
-    const room = rooms[key];
+    const creeps = {}
+    for (let name in Game.creeps) creeps[name] = Game.creeps[name];
 
-    const spawns = findSpawns(room);
-    if (!spawns.length) continue;
-
-    const controller = getController(room);
-    let controllerStatus = "No controller";
-    let RC, username;
-    if (controller) {
-      if (controller.owner) username = span(LIPERMODALU, controller.owner.username);
-      RC = "RCL " + controller.level;
+    const span = this.span;
+    const spacer = console.log;
+    const liner = function() {
+      console.log(span(GREENPEPPER, '----------------------------------'));
     }
 
-    console.log(span(HAPPYORANGE, key), span(HAPPYORANGE, RC), span(SAYSHELLO, controller.owner.username));
-    console.log(span(GREENPEPPER, "----------------------------------"));
+    // Test colors
+    // console.log(span(SAYSHELLO, "Lorem ipsum"));
+    // console.log(span(HAPPYORANGE, "Lorem ipsum"));
+    // console.log(span(LIPERMODALU, "Lorem ipsum"));
+    // console.log(span(GREENPEPPER, "Lorem ipsum"));
+    // console.log(span(COMEHOME, "Lorem ipsum"));
 
-    let inStorage ;
-    if (room.storage) inStorage = room.storage.energy + ' in storage.';
-    if (!room.storage) inStorage = span(GRAY, 'no storage.');
+    // TODO ASCII ART FOR Ry7 ?
 
-    let extensionsText;
-    const extensions = findExtensions(room);
-    if (extensions.length) extensionsText = extensions.length + ' Extension(s)';
-    if (!extensions.length) extensionsText = span(GRAY, 'no Extension(s)');
+    spacer();
 
-    let containersText;
-    const containers = findContainers(room);
-    if (containers.length) containersText = containers.length + ' Container(s).';
-    if (!containers.length) containersText = span(GRAY, 'no Container(s).');
+    for (let key in rooms) {
+      const room = rooms[key];
 
-    let towersText;
-    const towers = findTowers(room);
-    if (towers.length) towersText = towers.length + ' Tower(s) in the room.';
-    if (!towers.length) towersText = span(GRAY, 'no Tower(s) in the room.');
+      const spawns = findSpawns(room);
+      if (!spawns.length) continue;
 
-    console.log(room.energyAvailable, "of", room.energyCapacityAvailable, 'available,', inStorage);
-    console.log(extensionsText + ', ' + containersText);
-    console.log(towersText);
-    // console.log(room.extractors.length + ' Extractor(s) ' + room.extractorContainers.length + ' with a Container');
+      const controller = getController(room);
+      let controllerStatus = "No controller";
+      let RC, username;
+      if (controller) {
+        if (controller.owner) username = span(LIPERMODALU, controller.owner.username);
+        RC = "RCL " + controller.level;
+      }
+
+      console.log(span(HAPPYORANGE, key), span(HAPPYORANGE, RC), span(SAYSHELLO, controller.owner.username));
+
+      liner();
+
+      let inStorage ;
+      if (room.storage) inStorage = ', ' + room.storage.energy + ' in storage.';
+      if (!room.storage) inStorage = span(GRAY, ', no storage.');
+
+      let extensionsText;
+      const extensions = findExtensions(room);
+      if (extensions.length) extensionsText = extensions.length + ' Extension(s)';
+      if (!extensions.length) extensionsText = span(GRAY, 'no Extension(s)');
+
+      let containersText;
+      const containers = findContainers(room);
+      if (containers.length) containersText = containers.length + ' Container(s).';
+      if (!containers.length) containersText = span(GRAY, 'no Container(s).');
+
+      let towersText;
+      const towers = findTowers(room);
+      if (towers.length) towersText = towers.length + ' Tower(s) in the room.';
+      if (!towers.length) towersText = span(GRAY, 'no Tower(s) in the room.');
+
+      console.log(room.energyAvailable + " of " + room.energyCapacityAvailable + ' available' + inStorage);
+      console.log(extensionsText + ', ' + containersText);
+      console.log(towersText);
+      // console.log(room.extractors.length + ' Extractor(s) ' + room.extractorContainers.length + ' with a Container');
+    }
+
+    liner();
+    console.log(span(GRAY, Object.keys(rooms).length + ' Room(s) in sight.'));
+    console.log(span(GRAY, Object.keys(creeps).length + ' Creep(s) alive.'));
+    liner();
+    spacer();
+  },
+
+  /**
+    Returns styled HTML span tag
+    @param string hex color
+    @param string text message to be printed
+    */
+  span: function(hex, text) {
+    return `<span style="color:${hex}">${text}</span>`;
   }
-  console.log(); // Give some space
 }
 
 /**
@@ -128,13 +161,4 @@ function findTowers(room) {
   return room.find(FIND_MY_STRUCTURES, {
     filter: s => s.structureType == STRUCTURE_TOWER
   });
-}
-
-/**
-  Returns styled HTML span tag
-  @param string hex color
-  @param string text message to be printed
-  */
-function span(hex, text) {
-  return `<span style="color:${hex}">${text}</span>`;
 }

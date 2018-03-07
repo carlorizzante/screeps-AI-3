@@ -1,21 +1,31 @@
 const config = require("config");
-const roles = config.roles;
+const span = require("reporter").span;
 
-const BUILDER   = "builder";
-const HARVESTER = "harvester";
-const UPGRADER  = "upgrader";
-const HAULER    = "hauler";
-const HERO      = "hero";
-const MINER     = "miner";
-const CLAIMER   = "claimer";
-const DEFENDER  = "defender";
-const GUARD     = "guard";
+const SILVER      = '#C0C0C0';
+const GRAY        = '#808080';
+const SAYSHELLO   = '#FADD99';
+const HAPPYORANGE = '#EB6D33';
+const LIPERMODALU = '#0E848E';
+const GREENPEPPER = '#97963A';
+const COMEHOME    = '#F24269';
+
+const BUILDER     = "builder";
+const HARVESTER   = "harvester";
+const UPGRADER    = "upgrader";
+const HAULER      = "hauler";
+const HERO        = "hero";
+const MINER       = "miner";
+const CLAIMER     = "claimer";
+const DEFENDER    = "defender";
+const GUARD       = "guard";
 
 const TIER1_ENERGY_CAP = config.tier1_energy_cap();
 const TIER2_ENERGY_CAP = config.tier2_energy_cap();
 
 const VERBOSE = true;
 const DEBUG   = false;
+
+const roles = config.roles;
 
 StructureSpawn.prototype.logic = function() {
 
@@ -147,11 +157,14 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
     }
   });
 
+  let text;
+  const spawn = span(HAPPYORANGE, this.name + " " + this.room.name);
   if (result == OK) {
-    if (VERBOSE) console.log(this.name, "is spawning", name, listSkills(skills), homeroom, workroom, target_id);
-  } else if (VERBOSE) {
-    console.log(this.name, "spawning", role, "failed:", result, "cost:", calcCreepCost(skills));
+    text = span(GRAY, "spawning ") + name + " " + span(GRAY, listSkills(skills)) + " " + span(GRAY, homeroom + ", " + workroom + ", " + target_id);
+  } else {
+    text = span(GRAY, "failed to spawn ") + role + ", error " + result + span(GRAY, ", cost " + calcCreepCost(skills));
   }
+  if (VERBOSE) console.log(spawn, text);
   return result;
 }
 
@@ -161,7 +174,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
 StructureSpawn.prototype.deleteExpiredCreeps = function() {
   for (let name in Memory.creeps) {
     if (!Game.creeps[name]) {
-      if (VERBOSE) console.log("Creep", name, "deleted from memory.");
+      if (VERBOSE) console.log(span(GRAY, name + " deleted from memory."));
       delete Memory.creeps[name];
     }
   }

@@ -1,12 +1,18 @@
 # Screeps!
-Release 3.3.0 - codename Limiting Factor
+Release 3.4.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
 
 ## Grunt
-In order to stream files directly into the "default" folder, in game, you need to update one line in the file Gruntfile.js.
+Grunt can copy all files directly into the "default" folder of the game. In order to do so, you need to update one line in the Gruntfile.js file.
 
-In game, on the panel Script, you should find on the bottom of it a link "Open local folder". Click it copy as a string the location of the "default" folder and paste it into Grunt, as "dest".
+First find where the "default" folder is on your system. In game, on the panel Script, you should find on the bottom of it a link "Open local folder".
+
+Click on it and copy the location of the "default" folder.
+
+Paste it into Gruntfile.js as "dest" property, line 9.
+
+Launch the Watch task to validate your Javascript, and the Update task to update all files into the "default" folder of the game. That's all.
 
 ## Features
 
