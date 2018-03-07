@@ -1,55 +1,140 @@
+// Basics
+const WHITE   = '#FFFFFF';
+const SILVER  = '#C0C0C0';
+const GRAY    = '#808080';
+const RED     = '#FF0000';
+const MAROON  = '#800000';
+const YELLOW  = '#FFFF00';
+const OLIVE   = '#808000';
+const LIME    = '#00FF00';
+const GREEN   = '#008000';
+const AQUA    = '#00FFFF';
+const TEAL    = '#008080';
+const BLUE    = '#0000FF';
+const FUCHSIA = '#FF00FF';
+const PURPLE  = '#800080';
+
+// Alternate
+const AQUAMARINE = '#3498DB';
+const DARKPURPLE     = '#8E44AD';
+
+// Margarita @link http://www.colourlovers.com/palette/4559326/Margarita
+const SAYSHELLO   = '#FADD99';
+const HAPPYORANGE = '#EB6D33';
+const LIPERMODALU = '#0E848E';
+const GREENPEPPER = '#97963A';
+const COMEHOME    = '#F24269';
+
 module.exports = function(rooms) {
+
+  // console.log(span(SAYSHELLO, "Lorem ipsum"));
+  // console.log(span(HAPPYORANGE, "Lorem ipsum"));
+  // console.log(span(LIPERMODALU, "Lorem ipsum"));
+  // console.log(span(GREENPEPPER, "Lorem ipsum"));
+  // console.log(span(COMEHOME, "Lorem ipsum"));
 
   // TODO ASCII ART FOR Ry7
   console.log(); // Give some space
-  // console.log('<span style="color:rgba(52, 152, 219,1.0)">Ry7</span>');
-  console.log("Running", Object.keys(rooms).length, "Room(s).");
+  // console.log(span(AQUAMARINE, 'Ry7'));
+  // console.log("Running", Object.keys(rooms).length, "Room(s).");
 
   for (let key in rooms) {
     const room = rooms[key];
 
+    const spawns = findSpawns(room);
+    if (!spawns.length) continue;
+
     const controller = getController(room);
     let controllerStatus = "No controller";
-    let RCL, username;
+    let RC, username;
     if (controller) {
-      if (controller.owner) username = '<span style="color:rgba(52, 152, 219,1.0)">' + controller.owner.username + '</span>';
-      controllerStatus = "Controller level " + controller.level + ", Owner " + username;
-      RCL = "RCL " + controller.level;
+      if (controller.owner) username = span(LIPERMODALU, controller.owner.username);
+      RC = "RCL " + controller.level;
     }
 
-    console.log('<span style="color:rgba(142, 68, 173,1.0);">' + key + ' ' + RCL + '</span> ');
-    console.log('<span style="color:rgba(142, 68, 173,1.0);">##################################################</span>');
+    console.log(span(HAPPYORANGE, key), span(HAPPYORANGE, RC), span(SAYSHELLO, controller.owner.username));
+    console.log(span(GREENPEPPER, "----------------------------------"));
 
-    let inStorage = 0;
-    if (room.storage) inStorage = room.storage.energy;
-    console.log(room.energyAvailable, "of", room.energyCapacityAvailable, "available,", inStorage, "in storage.");
-    // console.log('<span style="color:rgba(39, 174, 96,1.0);">Structures</span>');
-    console.log(controllerStatus);
-    console.log(findExtensions(room).length + ' Extensions(s),', findContainers(room).length, "Container(s).");
-    console.log(findTowers(room).length + ' Tower(s) in the room.');
+    let inStorage ;
+    if (room.storage) inStorage = room.storage.energy + ' in storage.';
+    if (!room.storage) inStorage = span(GRAY, 'no storage.');
+
+    let extensionsText;
+    const extensions = findExtensions(room);
+    if (extensions.length) extensionsText = extensions.length + ' Extension(s)';
+    if (!extensions.length) extensionsText = span(GRAY, 'no Extension(s)');
+
+    let containersText;
+    const containers = findContainers(room);
+    if (containers.length) containersText = containers.length + ' Container(s).';
+    if (!containers.length) containersText = span(GRAY, 'no Container(s).');
+
+    let towersText;
+    const towers = findTowers(room);
+    if (towers.length) towersText = towers.length + ' Tower(s) in the room.';
+    if (!towers.length) towersText = span(GRAY, 'no Tower(s) in the room.');
+
+    console.log(room.energyAvailable, "of", room.energyCapacityAvailable, 'available,', inStorage);
+    console.log(extensionsText + ', ' + containersText);
+    console.log(towersText);
     // console.log(room.extractors.length + ' Extractor(s) ' + room.extractorContainers.length + ' with a Container');
   }
   console.log(); // Give some space
 }
 
+/**
+  Returns Object Room controller
+  @param Room room
+  */
 function getController(room) {
   return room.controller;
 }
 
+/**
+  Returns Array of Object Structure Spawn
+  @param Room room
+  */
+function findSpawns(room) {
+  return room.find(FIND_MY_STRUCTURES, {
+    filter: s => s.structureType == STRUCTURE_SPAWN
+  });
+}
+
+/**
+  Returns Array of Object Structure Extension
+  @param Room room
+  */
 function findExtensions(room) {
   return room.find(FIND_MY_STRUCTURES, {
     filter: s => s.structureType == STRUCTURE_EXTENSION
   });
 }
 
+/**
+  Returns Array of Object Structure Container
+  @param Room room
+  */
 function findContainers(room) {
   return room.find(FIND_STRUCTURES, {
     filter: s => s.structureType == STRUCTURE_CONTAINER
   });
 }
 
+/**
+  Returns Array of Object Structure Tower
+  @param Room room
+  */
 function findTowers(room) {
   return room.find(FIND_MY_STRUCTURES, {
     filter: s => s.structureType == STRUCTURE_TOWER
   });
+}
+
+/**
+  Returns styled HTML span tag
+  @param string hex color
+  @param string text message to be printed
+  */
+function span(hex, text) {
+  return `<span style="color:${hex}">${text}</span>`;
 }

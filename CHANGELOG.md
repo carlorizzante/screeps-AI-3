@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.3.0] - 2018-03-07
+### Changed
+- proto/prototype.creep.js, Creeps can now store and use target Structure and Source in Memory
+- proto/prototype.spawn.js, roles pulled from config.js
+- roles/role.builder.js, Builders can also recharge Spawns and Extensions if needed
+- roles/role.harvester.js, Harvesters can now help with the building of Structures/Roads
+- reporter.js, stylistic improvements
+- README.md, additional content about Tier 1 Creeps
+
 ## [3.2.0] - 2018-03-06
 ### Added
 - src/reporter.js, basic reporting, to be expanded

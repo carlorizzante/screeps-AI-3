@@ -1,33 +1,25 @@
-/**
-  Creeps Tier 1
-  */
 const BUILDER   = "builder";
 const HARVESTER = "harvester";
 const UPGRADER  = "upgrader";
-
-/**
-  Creeps Tier 2
-  */
-const HAULER = "hauler";
-const HERO   = "hero";
-const MINER  = "miner";
-
-/**
-  Creeps Tier 3
-  */
-const CLAIMER  = "claimer";
-const DEFENDER = "defender";
-const GUARD    = "guard";
+const HAULER    = "hauler";
+const HERO      = "hero";
+const MINER     = "miner";
+const CLAIMER   = "claimer";
+const DEFENDER  = "defender";
+const GUARD     = "guard";
 
 module.exports = {
-
-  /**
-    Global settings,
-    applied to the entire Empire.
-    */
-  global: function() {
-    return {}
-  },
+  roles: [
+    "builder",
+    "harvester",
+    "upgrader",
+    "hauler",
+    "hero",
+    "miner",
+    "claimer",
+    "defender",
+    "guard"
+  ],
 
   /**
     Max energy available for Creeps Tier 1.
@@ -70,7 +62,7 @@ module.exports = {
     const miners = creepsCount[MINER] ? creepsCount[MINER] : 0;
     const tier2 =  haulers + miners;
     const sources = room.find(FIND_SOURCES_ACTIVE);
-    return 3 * sources.length - tier2;
+    return 4 * sources.length - tier2;
   },
 
   /**

@@ -5,7 +5,7 @@ const rechargeTowers     = true
 const rechargeStorage    = true;
 const rechargeContainers = true;
 
-// Sources of Energy to harvest or withdraw from
+// Withdraw or harvest Energy from
 const useStorage         = false;
 const useContainers      = false;
 const useSources         = true;
@@ -21,8 +21,10 @@ module.exports = {
       If charged and in Homeroom
       */
     if (creep.isCharged() && room == homeroom) {
-      structure = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeStorage, rechargeContainers);
-      if (!structure) creep.buildStructure();
+      let recharge, build;
+      recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeStorage, rechargeContainers);
+      if (!recharge) build = creep.buildStructure();
+      if (!recharge && !build) require("role.upgrader").run(creep); // fallback as Upgrader
 
     /**
       If out of charge and in Workroom

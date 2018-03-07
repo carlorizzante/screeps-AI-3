@@ -1,4 +1,3 @@
-// Sources of Energy to harvest or withdraw from
 const useStorage         = true;
 const useContainers      = true;
 const useSources         = true;

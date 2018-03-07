@@ -1,46 +1,18 @@
 const config = require("config");
+const roles = config.roles;
 
-// List of active Creeps' roles
-const roles = [
-
-  // Tier 1 from 300 Energy
-  "builder",
-  "harvester",
-  "upgrader",
-
-  // Tier 2 from 800 Energy
-  // "hauler",
-  // "hero",
-  // "miner",
-
-  // Tier 3
-  // "claimer",
-  // "defender",
-  // "guard"
-];
-
-/**
-  Creeps Tier 1
-  */
 const BUILDER   = "builder";
 const HARVESTER = "harvester";
 const UPGRADER  = "upgrader";
+const HAULER    = "hauler";
+const HERO      = "hero";
+const MINER     = "miner";
+const CLAIMER   = "claimer";
+const DEFENDER  = "defender";
+const GUARD     = "guard";
+
 const TIER1_ENERGY_CAP = config.tier1_energy_cap();
-
-/**
-  Creeps Tier 2
-  */
-const HAULER = "hauler";
-const HERO   = "hero";
-const MINER  = "miner";
 const TIER2_ENERGY_CAP = config.tier2_energy_cap();
-
-/**
-  Creeps Tier 3
-//   */
-const CLAIMER  = "claimer";
-const DEFENDER = "defender";
-const GUARD    = "guard";
 
 const VERBOSE = true;
 const DEBUG   = false;
@@ -85,7 +57,6 @@ StructureSpawn.prototype.logic = function() {
   } else if (creepsInRoom[BUILDER] < BUILDERS_CAP) {
     this.spawnCustomCreep(BUILDER, this.room.name, this.room.name);
   }
-
 }
 
 /**
@@ -207,7 +178,7 @@ StructureSpawn.prototype.creepsInRoom = function() {
     count[role] = _.sum(creepsInRoom, c => c.memory.role == role);
   }
   if (DEBUG) for (let role in count) console.log(role, count[role]);
-  return count
+  return count;
 }
 
 /**
@@ -235,14 +206,14 @@ function listSkills(skills) {
 function calcCreepCost(parts) {
   let totalCost = 0;
   const bodyPartCosts = {
-    move: 50,
-    work: 100,
-    carry: 50,
-    attack: 80,
+    move:    50,
+    work:   100,
+    carry:   50,
+    attack:  80,
     ranged_attack: 150,
-    heal: 250,
-    claim: 600,
-    tough: 10
+    heal:   250,
+    claim:  600,
+    tough:   10
   }
   parts.forEach(part => totalCost += bodyPartCosts[part]);
   return totalCost;
