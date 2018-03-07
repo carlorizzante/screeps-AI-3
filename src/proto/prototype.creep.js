@@ -20,25 +20,67 @@ const COMICS  = true;
 const VERBOSE = true;
 const DEBUG   = false;
 
+const GRAY    = '#808080';
+const span = require("reporter").span;
+
 Creep.prototype.logic = function() {
-  if (!this.memory.homeroom) this.memory.homeroom = this.room.name;
-  if (!this.memory.workroom) this.memory.workroom = this.room.name;
+
+  this.forget('test');
+
+  // if (!this.memory.homeroom) this.memory.homeroom = this.room.name;
+  // if (!this.memory.workroom) this.memory.workroom = this.room.name;
+  const homeroom = this.remember('homeroom');
+  if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
+  if (this.room.name != homeroom && this.recycleAt(100)) return; // Recycle at 100 ticks otherwise
   roles[this.memory.role].run(this);
+}
+
+/**
+  Given a key, returns from Creep's memory the corresponding value if exists,
+  otherwise, if key does not exist, stores key/value
+  @param key String
+  @param value Json
+  @return json value
+  */
+Creep.prototype.remember = function(key, val) {
+  if (typeof key != 'string') throw Error("key has to be a string.");
+  if (val && !this.validateValue(val)) throw Error("val has to be a json valid entry.");
+  if (val === undefined || val === null) return this.memory[key];
+  this.memory[key] = val;
+  return val;
+}
+
+/**
+  Given a key, delete the key and its associated value from the Creep's memory
+  @param key String
+  @return void
+  */
+Creep.prototype.forget = function(key) {
+  delete this.memory[key];
+}
+
+Creep.prototype.validateValue = function(data) {
+  return typeof data === 'string'
+      || typeof data === 'number'
+      || typeof data === 'boolean'
+      || typeof data === 'object';
 }
 
 /**
   Returns true if the Creep is fully charged, false otherwise
   Modifies this.memory.charged = Boolean
-  @returns Boolean, this.memory.charged state
+  @returns Boolean, Creep's charged state, true is ready for duty, false needs to recharge
   */
 Creep.prototype.isCharged = function() {
   if (this.carry.energy <= 0) {
-    this.memory.charged = false;
+    this.remember('charged', false);
+    this.forget('structure_id');
   } else if (this.carry.energy == this.carryCapacity) {
-    this.memory.charged = true;
-    delete this.memory.source_id;
+    this.remember('charged', true);
+    this.forget('storage_id');
+    this.forget('source_id');
   }
-  return this.memory.charged; // Return state
+  return this.remember('charged'); // return state
 }
 
 /**
@@ -57,12 +99,12 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   let storage; // Containers and Storage require withdraw()
 
   // First check that Creep has already a target Storage or Container
-  if (this.memory.storage_id) {
-    storage = Game.getObjectById(this.memory.storage_id);
+  if (this.remember('storage_id')) {
+    storage = Game.getObjectById(this.remember('storage_id'));
 
     // If storage empty, reset and start over
     if (storage.store[RESOURCE_ENERGY] <= threshold) {
-      delete this.memory.storage_id;
+      this.forget('storage_id');
       storage = null;
     }
   }
@@ -80,12 +122,12 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   }
 
   // Otherwise check that Creep has already a target Source
-  if (!storage && useSource && this.memory.source_id) {
-    source = Game.getObjectById(this.memory.source_id);
+  if (!storage && useSource && this.remember('source_id')) {
+    source = Game.getObjectById(this.remember('source_id'));
 
     // If Source exhausted, reset and start over
     if (source.energy <= 0) {
-      delete this.memory.source_id;
+      this.forget('source_id');
       source = null;
     }
   }
@@ -98,8 +140,8 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   }
 
   // If a Storage or Source found, save it and use it at the next tick
-  if (storage) this.memory.storage_id = storage.id;
-  if (source)  this.memory.source_id = source.id;
+  if (storage) this.remember('storage_id', storage.id);
+  if (source)  this.remember('source_id', source.id);
 
   // Prioritize Storage and Containers over Sources
   if (storage && this.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -125,7 +167,7 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   */
 Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
 
-  if (this.memory.structure_id) return Game.getObjectById(this.memory.structure_id);
+  if (this.remember('structure_id')) return Game.getObjectById(this.remember('structure_id'));
 
   let structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
     filter: s => (includeSpawns && s.structureType == STRUCTURE_SPAWN && s.energy < s.energyCapacity)
@@ -137,8 +179,8 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
     filter: s => (includeContainers && s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < s.storeCapacity)
   });
 
-  if (structure) this.memory.structure_id = structure.id;
-  if (!structure) delete this.memory.structure_id;
+  if (structure) this.remember('structure_id', structure.id);
+  if (!structure) this.forget('structure_id');
   return structure;
 }
 
@@ -156,15 +198,15 @@ Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, i
   if (structure) {
     let result = this.transfer(structure, RESOURCE_ENERGY);
     if (result == ERR_NOT_IN_RANGE) result = this.moveTo(structure);
-    if (result == ERR_FULL || result == ERR_NO_PATH) delete this.memory.structure_id;
+    if (result == ERR_FULL || result == ERR_NO_PATH) this.forget('structure_id');
   }
   return structure;
 }
 
 /**
   Effects: Creep finds and repairs structures nearby in need or maintenance
-  @param range Number range within look for structure to repair
-  @returns Number, length of structures found
+  @param range Int range within look for structure to repair
+  @returns Int, length of structures found
   */
 Creep.prototype.repairStructure = function(range) {
   const repairThrehold = 0.5; // TODO: bind this to config.js
@@ -184,7 +226,7 @@ Creep.prototype.repairStructure = function(range) {
 
 /**
   Effects: Creep looks for a construction site and move to build it
-  @returns CONSTRUCTION_SITE
+  @returns ConstructionSite
   TODO: store target_id
   */
 Creep.prototype.buildStructure = function() {
@@ -200,14 +242,13 @@ Creep.prototype.buildStructure = function() {
 /**
   Allows Creeps to move to a nearby rooms if no Energy source is available
   Modifies creep.memory.workroom
-  @param roomname String the name of the room to use as Workroom
-  @returns Boolean, true if successful, false otherwise
+  @param roomname String, the name of the room to use as Workroom
+  @returns String, new Workroom
   */
 Creep.prototype.changeWorkroom = function(roomname) {
 
   if (roomname) {
-    this.memory.workroom = roomname;
-    return this.memory.workroom == roomname;
+    return this.remember('workroom', roomname);
   }
 
   let rooms = [];
@@ -221,7 +262,38 @@ Creep.prototype.changeWorkroom = function(roomname) {
   const newWorkroom = _.sample(rooms);
 
   if (COMICS) this.say(newWorkroom);
-  
-  this.memory.workroom = newWorkroom;
-  return this.memory == newWorkroom;
+  return this.remember('workroom', newWorkroom);
+}
+
+/**
+  Effects: Creep moves towards Spawn in Homeroom, and eventually gets recycled
+  @param terminalTicks Int, ticks left to live under which initiate the recycling procedure
+  @returns Boolean, true if Creep is due for recycling, false otherwise
+  TODO clean up and refactor
+  */
+Creep.prototype.recycleAt = function(terminalTicks) {
+  if (!terminalTicks) throw Error('Missing param ticks');
+  if (this.ticksToLive <= terminalTicks) {
+    if (COMICS) this.say("#@$");
+
+    if (this.room.name != this.remember('homeroom')) {
+      const exit = this.room.findExitTo(this.remember('homeroom'));
+      this.moveTo(this.pos.findClosestByPath(exit));
+      return
+    }
+
+    const spawn = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+      filter: s => s.structureType == STRUCTURE_SPAWN
+    });
+
+    if (!spawn) return false; // No Spawn in sight yet
+
+    if (this.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || spawn.recycleCreep(this) == ERR_NOT_IN_RANGE) {
+      this.moveTo(spawn);
+    } else {
+      if (VERBOSE) console.log(span(GRAY, this.name + " has been recycled"));
+    }
+    return true;
+  }
+  return false;
 }

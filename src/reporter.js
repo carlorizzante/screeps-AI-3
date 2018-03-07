@@ -66,7 +66,7 @@ module.exports = {
       let RC, username;
       if (controller) {
         if (controller.owner) username = span(LIPERMODALU, controller.owner.username);
-        RC = "RCL " + controller.level;
+        RC = "RCL" + controller.level;
       }
 
       console.log(span(HAPPYORANGE, key), span(HAPPYORANGE, RC), span(SAYSHELLO, controller.owner.username));

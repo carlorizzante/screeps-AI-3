@@ -4,13 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.4.1] UNRELEASED
+### Added
+- src/proto/prototype.creep.js, remember() and forget() methods for Creeps' memory management
+
 ## [3.4.0] - 2018-03-07
 ### Added
 - src/proto/prototype.tower.js, first iteration on Towers' logic
 
 ### Changed
 - src/proto/prototype.spawn.js, colorized feedback in console
-- src/config.js, added repair_threshold, wall_repair_threshold and rampart_repair_threshold methods
+- src/config.js, added repair_threshold(), wall_repair_threshold() and rampart_repair_threshold() methods
 - src/main.js, Room objects are now handled by reporter.js
 - src/reporter.js, refactoring and improvements
 - package.js, added a bit more info about the project

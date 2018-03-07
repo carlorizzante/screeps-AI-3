@@ -1,5 +1,4 @@
 const config = require("config");
-const span = require("reporter").span;
 
 const SILVER      = '#C0C0C0';
 const GRAY        = '#808080';
@@ -26,6 +25,7 @@ const VERBOSE = true;
 const DEBUG   = false;
 
 const roles = config.roles;
+const span = require("reporter").span;
 
 StructureSpawn.prototype.logic = function() {
 
