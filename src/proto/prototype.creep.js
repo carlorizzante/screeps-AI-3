@@ -8,7 +8,7 @@ const roles = {
   // Tier 2
   // hauler: require("role.hauler"),
   // hero: require("role.hero"),
-  // miner: require("role.miner"),
+  miner: require("role.miner"),
 
   // Tier 3
   // claimer: require("role.claimer"),
@@ -24,14 +24,13 @@ const GRAY    = '#808080';
 const span = require("reporter").span;
 
 Creep.prototype.logic = function() {
-
-  this.forget('test');
-
   // if (!this.memory.homeroom) this.memory.homeroom = this.room.name;
   // if (!this.memory.workroom) this.memory.workroom = this.room.name;
   const homeroom = this.remember('homeroom');
   if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
   if (this.room.name != homeroom && this.recycleAt(100)) return; // Recycle at 100 ticks otherwise
+
+  this.pickupDroplets(10);
   roles[this.memory.role].run(this);
 }
 
@@ -81,6 +80,48 @@ Creep.prototype.isCharged = function() {
     this.forget('source_id');
   }
   return this.remember('charged'); // return state
+}
+
+/**
+  Returns true if conditions are met, false otherwise
+  Used by Miners to lock up onto Energy Sources and the adjacent Container
+  @param ifNearbyEnergySource Boolean default: true
+  @param ifNearbyContainer Boolean
+  @returns Boolean, true is locked, false othewise
+  TODO refactor to enable different type of Source/Minerals
+  */
+Creep.prototype.isLocked = function(ifNearbyEnergySource, ifNearbyContainer) {
+
+  ifNearbyEnergySource = ifNearbyEnergySource ? ifNearbyEnergySource : false;
+
+  let energySourceFound;
+  let containerFound;
+  let locked = true;
+
+  // Stay locked is conditions have previously successfully met
+  if (this.remember('locked')) {
+    return true;
+  }
+
+  if (ifNearbyEnergySource) {
+    energySourceFound = this.pos.findInRange(FIND_SOURCES, 1);
+  }
+
+  if (ifNearbyContainer) {
+    containerFound = this.pos.findInRange(FIND_STRUCTURES, 1, {
+      filter: s => s.structureType == STRUCTURE_CONTAINER
+    });
+  }
+
+  if (ifNearbyEnergySource) locked = locked && energySourceFound.length;
+  if (ifNearbyContainer)    locked = locked && containerFound.length;
+
+  if (locked) {
+    this.remember('locked', true);
+    if (ifNearbyEnergySource) this.memory.locked_on_energy_source_id = energySourceFound[0].id;
+    if (ifNearbyContainer) this.memory.locked_on_container_id = containerFound[0].id;
+  }
+  return locked;
 }
 
 /**
@@ -267,13 +308,13 @@ Creep.prototype.changeWorkroom = function(roomname) {
 
 /**
   Effects: Creep moves towards Spawn in Homeroom, and eventually gets recycled
-  @param terminalTicks Int, ticks left to live under which initiate the recycling procedure
+  @param threshold Int, ticks left to live under which initiate the recycling procedure
   @returns Boolean, true if Creep is due for recycling, false otherwise
   TODO clean up and refactor
   */
-Creep.prototype.recycleAt = function(terminalTicks) {
-  if (!terminalTicks) throw Error('Missing param ticks');
-  if (this.ticksToLive <= terminalTicks) {
+Creep.prototype.recycleAt = function(threshold) {
+  if (!threshold) throw Error('Missing param threshold');
+  if (this.ticksToLive <= threshold) {
     if (COMICS) this.say("#@$");
 
     if (this.room.name != this.remember('homeroom')) {
@@ -296,4 +337,25 @@ Creep.prototype.recycleAt = function(terminalTicks) {
     return true;
   }
   return false;
+}
+
+/**
+  Effects: Enables Creep to look out for dropped Energy in range and to pick it up
+  @param range int
+  TODO refactor and optimize
+  TODO distinguish between resource type
+  TODO verify that Creep has CARRY body part and can handle Energy
+  */
+Creep.prototype.pickupDroplets = function(range) {
+  if (!range) throw Error("Missing param range.");
+  if (Game.time % range != 0) return; // Look up every "range" ticks
+  const droplets = this.pos.findInRange(FIND_DROPPED_RESOURCES, range);
+  if (droplets.length) {
+    const pickup = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+      filter: r => r.resourceType == RESOURCE_ENERGY
+    });
+    // Pickup only worthing droplets
+    if (pickup.amount >= 50 && this.pickup(pickup) == ERR_NOT_IN_RANGE) this.moveTo(pickup);
+    return; // Prioritize current operation
+  }
 }

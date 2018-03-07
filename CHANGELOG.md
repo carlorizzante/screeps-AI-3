@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.4.1] UNRELEASED
+## [3.6.0] - 2018-03-08
+### Added
+- src/prototype.creep.js, added pickupDroplets() method, all Creeps can now pickup dropped resources
+                          added isLocked() method, used by Miners to lock on to an Energy Source
+- src/prototype.spawn.js, Spawns can now spawn Miners
+- src/roles/role.miner.js, added Miners to the pool of available/functional Creeps
+- src/config.js, added rules for Haulers and Miners
+
+### Edited
+- README.md, added Miners to list of Units
+
+## [3.4.1] - 2018-03-07
 ### Added
 - src/proto/prototype.creep.js, remember() and forget() methods for Creeps' memory management
 

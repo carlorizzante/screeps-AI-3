@@ -1,5 +1,5 @@
 # Screeps!
-Release 3.4.1 - Codename Limiting Factor
+Release 3.6.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
 
@@ -28,6 +28,9 @@ Harvesters quite sophisticated behaviour, 1. harvest energy from Energy Sources,
 
 ### Upgraders
 Upgraders take care exclusively of upgrading the Room Controller.
+
+### Miners
+Miners are all about extraction, optimized to extract 3000 unit of Energy right before the regeneration of the Energy Source. In order to do so, they lock on an Energy Source for the entire duration of their life.
 
 ## Towers
 

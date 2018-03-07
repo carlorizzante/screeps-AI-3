@@ -46,9 +46,9 @@ StructureSpawn.prototype.logic = function() {
   const UPGRADERS_CAP  = config.upgraders_cap(this.room);
 
   // Tier 2
-  // const TIER2_ENERGY_THRESHOLD = config.tier2_energy_threshold(room);
-  // const HAULER_CAP     = config.haulers_cap(room);
-  // const MINER_CAP      = config.miners_cap(room);
+  const TIER2_ENERGY_THRESHOLD = config.tier2_energy_threshold(this.room);
+  const HAULER_CAP     = config.haulers_cap(this.room);
+  const MINER_CAP      = config.miners_cap(this.room);
 
   // Tier 3
   // const TIER3_ENERGY_THRESHOLD = config.tier3_energy_threshold(room);
@@ -66,6 +66,29 @@ StructureSpawn.prototype.logic = function() {
 
   } else if (creepsInRoom[BUILDER] < BUILDERS_CAP) {
     this.spawnCustomCreep(BUILDER, this.room.name, this.room.name);
+
+  /**
+    Creeps Tier 2 allowed only if enough energyCapacityAvailable
+    */
+  } else if (this.room.energyAvailable < TIER2_ENERGY_THRESHOLD) {
+    return;
+
+    // TO DO: distibure minsers equally amoung available Energy Sources in the room
+  } else if (creepsInRoom[MINER] < MINER_CAP && this.room.energyAvailable >= 700) {
+    this.spawnCustomCreep(MINER, this.room.name, this.room.name);
+
+  // Temporary block
+  } else if (true) {
+    return;
+
+  } else if (creepsInRoom[HAULER] < HAULER_CAP) {
+    this.spawnCustomCreep(HAULER, this.room.name, this.room.name);
+
+  /**
+    Spawn Hero to max energy and assign it to a nearby room
+    */
+  } else if (this.room.energyAvailable == room.energyCapacityAvailable) {
+    this.spawnCustomCreep(HERO, this.room.name, _.sample(adjacentRooms));
   }
 }
 
