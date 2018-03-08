@@ -2,14 +2,14 @@ require("prototype.creep");
 require("prototype.spawn");
 require("prototype.tower");
 
-const REPORT = true
+VERBOSE = true; // global
 
 const reporter = require("reporter");
 
 module.exports.loop = function() {
   "use strict";
 
-  if (REPORT && Game.time % 100 == 0) {
+  if (Game.time % 100 == 0) {
     reporter.report();
   }
 

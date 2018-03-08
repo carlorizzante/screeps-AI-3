@@ -1,14 +1,17 @@
+const srcdir = global.testing ? '../' : './';
+const rolesdir = global.testing ? '../roles/' : './';
+
 const roles = {
 
   // Tier 1
-  builder: require("role.builder"),
-  harvester: require("role.harvester"),
-  upgrader: require("role.upgrader"),
+  builder: require(rolesdir + 'role.builder'),
+  harvester: require(rolesdir + 'role.harvester'),
+  upgrader: require(rolesdir + 'role.upgrader'),
 
   // Tier 2
-  hauler: require("role.hauler"),
-  hero: require("role.hero"),
-  miner: require("role.miner"),
+  hauler: require(rolesdir + 'role.hauler'),
+  hero: require(rolesdir + 'role.hero'),
+  miner: require(rolesdir + 'role.miner'),
 
   // Tier 3
   // claimer: require("role.claimer"),
@@ -17,15 +20,15 @@ const roles = {
 };
 
 const COMICS  = true;
-const VERBOSE = true;
 const DEBUG   = false;
 
 const GRAY    = '#808080';
 const RED     = '#FF0000';
 const YELLOW  = '#FFFF00';
-const span = require("reporter").span;
+const span = require(srcdir + 'reporter').span;
 
 Creep.prototype.logic = function() {
+  "use strict";
 
   const homeroom = this.remember('homeroom');
   if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
@@ -41,6 +44,7 @@ Creep.prototype.logic = function() {
   @return json value
   */
 Creep.prototype.remember = function(key, val) {
+  "use strict";
   if (typeof key != 'string') throw Error("key has to be a string.");
   if (val && !this.validateValue(val)) throw Error("val has to be a json valid entry.");
   if (val === undefined || val === null) return this.memory[key];
@@ -54,10 +58,12 @@ Creep.prototype.remember = function(key, val) {
   @return void
   */
 Creep.prototype.forget = function(key) {
+  "use strict";
   delete this.memory[key];
 }
 
 Creep.prototype.validateValue = function(data) {
+  "use strict";
   return typeof data === 'string'
       || typeof data === 'number'
       || typeof data === 'boolean'
@@ -70,6 +76,7 @@ Creep.prototype.validateValue = function(data) {
   @returns Boolean, Creep's charged state, true is ready for duty, false needs to recharge
   */
 Creep.prototype.isCharged = function() {
+  "use strict";
   if (this.carry.energy <= 0) {
     this.remember('charged', false);
   } else if (this.carry.energy == this.carryCapacity) {
@@ -86,6 +93,7 @@ Creep.prototype.isCharged = function() {
   TODO refactor to enable different type of Source/Minerals
   */
 Creep.prototype.isLocked = function() {
+  "use strict";
 
   // Stay locked is al conditions have been met
   if (this.remember('locked')
@@ -117,6 +125,7 @@ Creep.prototype.isLocked = function() {
   @returns Boolean, true for found, false otherwise
   */
 Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
+  "use strict";
 
   // Elect only Storage or Containers if there is enough energy to take
   const threshold = this.carryCapacity / 2;
@@ -192,20 +201,28 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   @returns Object Structure or null if no Structure found
   */
 Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
+  "use strict";
 
   if (this.remember('structure_id')) return Game.getObjectById(this.remember('structure_id'));
 
   if (this.room.defcon) console.log(span(RED, 'TODO DEFCON prioritize Towers')); // TODO priotize Defcon protocols
 
+  // Prioritize, in order, Spawn, Extensions...
   let structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
     filter: s => (includeSpawns && s.structureType == STRUCTURE_SPAWN && s.energy < s.energyCapacity)
       || (includeExtensions && s.structureType == STRUCTURE_EXTENSION && s.energy < s.energyCapacity)
-      || (includeTowers && s.structureType ==         STRUCTURE_TOWER && s.energy < s.energyCapacity * 0.7)
-      || (includeStorage && s.structureType ==      STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] < s.storeCapacity)
+      || (includeTowers && s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity)
   });
-  if (includeContainers && !structure) structure = this.pos.findClosestByPath(FIND_STRUCTURES, {
-    filter: s => (includeContainers && s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < s.storeCapacity)
+  // ...then Towers...
+  if (!structure && includeContainers) structure = this.pos.findClosestByPath(FIND_STRUCTURES, {
+    filter: s => (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < s.storeCapacity)
   });
+  // ...and finally Room Storage
+  if (!structure && includeStorage) structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    filter: s => (s.structureType == STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] < s.storeCapacity)
+  });
+
+  // console.log(this.memory.role, structure);
 
   if (structure) this.remember('structure_id', structure.id);
   if (!structure) this.forget('structure_id');
@@ -222,6 +239,10 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
   @returns Boolean, true if successful, false otherwise
   */
 Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
+  "use strict";
+
+  let structure;
+
   structure = this.findStructure(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers);
   if (structure) {
     let result = this.transfer(structure, RESOURCE_ENERGY);
@@ -237,6 +258,8 @@ Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, i
   @returns Int, length of structures found
   */
 Creep.prototype.repairStructure = function(range) {
+  "use strict";
+
   const repairThrehold = 0.5; // TODO: bind this to config.js
   const structures = this.pos.findInRange(FIND_STRUCTURES, range, {
     filter: s => s.hits < (s.hitsMax * repairThrehold)
@@ -258,6 +281,8 @@ Creep.prototype.repairStructure = function(range) {
   TODO: store target_id
   */
 Creep.prototype.buildStructure = function() {
+  "use strict";
+
   const constructionSite = this.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
   if (constructionSite) {
     if (this.build(constructionSite) == ERR_NOT_IN_RANGE) {
@@ -274,6 +299,7 @@ Creep.prototype.buildStructure = function() {
   @returns String, new Workroom
   */
 Creep.prototype.changeWorkroom = function(roomname) {
+  "use strict";
 
   if (roomname) {
     return this.remember('workroom', roomname);
@@ -300,6 +326,8 @@ Creep.prototype.changeWorkroom = function(roomname) {
   TODO clean up and refactor
   */
 Creep.prototype.recycleAt = function(threshold) {
+  "use strict";
+
   if (!threshold) throw Error('Missing param int threshold');
   if (this.ticksToLive <= threshold) {
     if (COMICS) this.say("#@$");
@@ -334,6 +362,8 @@ Creep.prototype.recycleAt = function(threshold) {
   TODO verify that Creep has CARRY body part and can handle Energy
   */
 Creep.prototype.pickupDroplets = function(range) {
+  "use strict";
+
   if (!range) throw Error("Missing param int range.");
 
   let droplet;
@@ -358,7 +388,7 @@ Creep.prototype.pickupDroplets = function(range) {
       });
     }
   }
-  // if (droplet) pickup = droplet.amount;
+
   if (droplet && this.pickup(droplet) == ERR_NOT_IN_RANGE) {
     if (COMICS) this.say('$$$');
     this.remember('droplet_id', droplet.id);
@@ -378,6 +408,8 @@ Creep.prototype.pickupDroplets = function(range) {
   TODO correlate fatigue to MOVE body parts
   */
 Creep.prototype.requestRoad = function(fatigue) {
+  "use strict";
+
   if (fatigue === undefined) throw Error("Missing param int fatigue.")
   if (this.fatigue >= fatigue) {
     if (COMICS) this.say("Road!");

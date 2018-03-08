@@ -5,10 +5,10 @@ const WALL_THESHOLD    = config.wall_repair_threshold();
 const RAMPART_THESHOLD = config.rampart_repair_threshold();
 const RANGE = 20;
 
-const VERBOSE = false;
 const DEBUG = false;
 
 StructureTower.prototype.logic = function() {
+  "use strict";
 
   let target;
 

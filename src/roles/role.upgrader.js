@@ -4,6 +4,7 @@ const useSources         = true;
 
 module.exports = {
   run: creep => {
+    "use strict";
 
     const room = creep.room.name;
     const homeroom = creep.memory.homeroom;

@@ -31,6 +31,7 @@ module.exports = {
     Effects: outputs in console a report of the current state of the rooms owned by the player
     */
   report: function() {
+    "use strict";
 
     const rooms = {}
     for (let key in Game.rooms) rooms[key] = Game.rooms[key];

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.0] 2018-03-09
+### Added
+- src/timers.js, collection of utilities to track times in ticks
+- test/setup.test.js, initial setup due to prototypal inheritance
+- test/timers.test.js, testing for the timers module
+- Gruntfile.js, added Mocha for testing
+
+### Changed
+- src/all, generally added 'use strict' at function level
+
 ## [3.8.0] 2018-03-08
 ### Added
 - src/proto/prototype.creep.js, fatigue() method now evaluate true if fatigue >= threshold

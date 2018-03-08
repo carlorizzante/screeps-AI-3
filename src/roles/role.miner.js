@@ -1,5 +1,7 @@
 module.exports = {
   run: creep => {
+    "use strict";
+    
     creep.requestRoad(4);
 
     const isLocked  = creep.isLocked();

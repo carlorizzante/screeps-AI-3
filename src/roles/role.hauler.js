@@ -12,6 +12,8 @@ const useSources         = false;
 
 module.exports = {
   run: creep => {
+    "use strict";
+    
     creep.requestRoad(2);
 
     if (creep.isCharged()) {

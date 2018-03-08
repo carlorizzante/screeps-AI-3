@@ -1,5 +1,5 @@
 # Screeps!
-Release 3.8.0 - Codename Limiting Factor
+Release 3.9.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
 

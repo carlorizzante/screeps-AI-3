@@ -23,10 +23,10 @@ const GUARD       = "guard";
 const TIER1_ENERGY_CAP = config.tier1_energy_cap();
 const TIER2_ENERGY_CAP = config.tier2_energy_cap();
 
-const VERBOSE = true;
 const DEBUG   = false;
 
 StructureSpawn.prototype.logic = function() {
+  "use strict";
 
   const energyCapacityAvailable = this.room.energyCapacityAvailable;
   const energyAvailable         = this.room.energyAvailable;
@@ -93,6 +93,7 @@ StructureSpawn.prototype.logic = function() {
   @returns status (see Game's Constants)
   */
 StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, target_id) {
+  "use strict";
 
   let energyUsed = 0;
   let use;
@@ -187,6 +188,8 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
   Effects: deletes from Memory Creeps that do not longer exist
   */
 StructureSpawn.prototype.deleteExpiredCreeps = function() {
+  "use strict";
+
   for (let name in Memory.creeps) {
     if (!Game.creeps[name]) {
       if (VERBOSE) console.log(span(GRAY, name + " deleted from memory."));
@@ -200,6 +203,8 @@ StructureSpawn.prototype.deleteExpiredCreeps = function() {
   @returns Object, count of each existing role in the current room
   */
 StructureSpawn.prototype.creepsInRoom = function() {
+  "use strict";
+
   const creepsInRoom = this.room.find(FIND_MY_CREEPS);
   const count = {}
   for (let role of roles) {
@@ -214,6 +219,8 @@ StructureSpawn.prototype.creepsInRoom = function() {
   @returns Array of String, exits to rooms that do not belong to the player
   */
 StructureSpawn.prototype.getExits = function() {
+  "use strict";
+
   const adjacentRooms = Game.map.describeExits(this.room.name);
   const forbiddenRooms = Memory.spawns;
   let rooms = [];
@@ -231,6 +238,8 @@ StructureSpawn.prototype.getExits = function() {
   @returns String, list of Body Parts
   */
 function listSkills(skills) {
+  "use strict";
+
   const countParts = {}
   let output = "[";
   for (let skill of skills) {
@@ -248,6 +257,8 @@ function listSkills(skills) {
   @returns Number, total cost of all Body Parts combined
   */
 function calcCreepCost(parts) {
+  "use strict";
+  
   let totalCost = 0;
   const bodyPartCosts = {
     move:    50,
