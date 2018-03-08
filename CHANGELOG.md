@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.7.0] - 2018-03-08
+### Added
+- src/roles/role.hauler.js, added Haulers to the pool of available Creeps
+
+### Changed
+- src/proto/prototype.creep.js, refactored pickupDroplets() method
+                                refactored isLocked() method
+- src/proto/prototype.spawn.js, Spawns can now spawn Haulers
+- src/roles/role.builder.js, Builders can now pickup dropped Energy units
+- src/roles/role.harvester.js, Harvesters can now pickup dropped Energy units
+- src/roles/role.miner.js, bug fix
+- src/roles/role.upgrader.js, Upgraders can now pickup dropped Energy units
+
+### Edited
+- README.md, Added Haulers and Heroes description.
+
 ## [3.6.0] - 2018-03-08
 ### Added
 - src/prototype.creep.js, added pickupDroplets() method, all Creeps can now pickup dropped resources

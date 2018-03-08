@@ -73,16 +73,16 @@ StructureSpawn.prototype.logic = function() {
   } else if (this.room.energyAvailable < TIER2_ENERGY_THRESHOLD) {
     return;
 
-    // TO DO: distibure minsers equally amoung available Energy Sources in the room
+  // TODO distibure minsers equally amoung available Energy Sources in the room
   } else if (creepsInRoom[MINER] < MINER_CAP && this.room.energyAvailable >= 700) {
     this.spawnCustomCreep(MINER, this.room.name, this.room.name);
+
+  } else if (creepsInRoom[HAULER] < HAULER_CAP) {
+    this.spawnCustomCreep(HAULER, this.room.name, this.room.name);
 
   // Temporary block
   } else if (true) {
     return;
-
-  } else if (creepsInRoom[HAULER] < HAULER_CAP) {
-    this.spawnCustomCreep(HAULER, this.room.name, this.room.name);
 
   /**
     Spawn Hero to max energy and assign it to a nearby room

@@ -6,7 +6,7 @@ const roles = {
   upgrader: require("role.upgrader"),
 
   // Tier 2
-  // hauler: require("role.hauler"),
+  hauler: require("role.hauler"),
   // hero: require("role.hero"),
   miner: require("role.miner"),
 
@@ -21,16 +21,14 @@ const VERBOSE = true;
 const DEBUG   = false;
 
 const GRAY    = '#808080';
+const RED     = '#FF0000';
+const YELLOW  = '#FFFF00';
 const span = require("reporter").span;
 
 Creep.prototype.logic = function() {
-  // if (!this.memory.homeroom) this.memory.homeroom = this.room.name;
-  // if (!this.memory.workroom) this.memory.workroom = this.room.name;
   const homeroom = this.remember('homeroom');
   if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
   if (this.room.name != homeroom && this.recycleAt(100)) return; // Recycle at 100 ticks otherwise
-
-  this.pickupDroplets(10);
   roles[this.memory.role].run(this);
 }
 
@@ -73,11 +71,8 @@ Creep.prototype.validateValue = function(data) {
 Creep.prototype.isCharged = function() {
   if (this.carry.energy <= 0) {
     this.remember('charged', false);
-    this.forget('structure_id');
   } else if (this.carry.energy == this.carryCapacity) {
     this.remember('charged', true);
-    this.forget('storage_id');
-    this.forget('source_id');
   }
   return this.remember('charged'); // return state
 }
@@ -85,43 +80,32 @@ Creep.prototype.isCharged = function() {
 /**
   Returns true if conditions are met, false otherwise
   Used by Miners to lock up onto Energy Sources and the adjacent Container
-  @param ifNearbyEnergySource Boolean default: true
-  @param ifNearbyContainer Boolean
-  @returns Boolean, true is locked, false othewise
+  @param
+  @returns Boolean, true if it'is locked, false othewise
   TODO refactor to enable different type of Source/Minerals
   */
-Creep.prototype.isLocked = function(ifNearbyEnergySource, ifNearbyContainer) {
+Creep.prototype.isLocked = function() {
 
-  ifNearbyEnergySource = ifNearbyEnergySource ? ifNearbyEnergySource : false;
+  // Stay locked is al conditions have been met
+  if (this.remember('locked')
+    && this.remember('source_id')
+    && this.remember('container_id')) return this.remember('locked');
 
-  let energySourceFound;
-  let containerFound;
-  let locked = true;
+  let sources;
+  let containers;
+  let locked;
 
-  // Stay locked is conditions have previously successfully met
-  if (this.remember('locked')) {
-    return true;
-  }
+  sources = this.pos.findInRange(FIND_SOURCES, 1);
+  containers = this.pos.findInRange(FIND_STRUCTURES, 1, {
+    filter: s => s.structureType == STRUCTURE_CONTAINER
+  });
 
-  if (ifNearbyEnergySource) {
-    energySourceFound = this.pos.findInRange(FIND_SOURCES, 1);
-  }
-
-  if (ifNearbyContainer) {
-    containerFound = this.pos.findInRange(FIND_STRUCTURES, 1, {
-      filter: s => s.structureType == STRUCTURE_CONTAINER
-    });
-  }
-
-  if (ifNearbyEnergySource) locked = locked && energySourceFound.length;
-  if (ifNearbyContainer)    locked = locked && containerFound.length;
-
-  if (locked) {
+  if (sources.length && containers.length) {
     this.remember('locked', true);
-    if (ifNearbyEnergySource) this.memory.locked_on_energy_source_id = energySourceFound[0].id;
-    if (ifNearbyContainer) this.memory.locked_on_container_id = containerFound[0].id;
+    this.remember('source_id', sources[0].id);
+    this.remember('container_id', containers[0].id);
   }
-  return locked;
+  return this.remember('locked');
 }
 
 /**
@@ -209,6 +193,8 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
 Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
 
   if (this.remember('structure_id')) return Game.getObjectById(this.remember('structure_id'));
+
+  if (this.room.defcon) console.log(span(RED, 'TODO DEFCON prioritize Towers')); // TODO priotize Defcon protocols
 
   let structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
     filter: s => (includeSpawns && s.structureType == STRUCTURE_SPAWN && s.energy < s.energyCapacity)
@@ -313,7 +299,7 @@ Creep.prototype.changeWorkroom = function(roomname) {
   TODO clean up and refactor
   */
 Creep.prototype.recycleAt = function(threshold) {
-  if (!threshold) throw Error('Missing param threshold');
+  if (!threshold) throw Error('Missing param int threshold');
   if (this.ticksToLive <= threshold) {
     if (COMICS) this.say("#@$");
 
@@ -347,15 +333,54 @@ Creep.prototype.recycleAt = function(threshold) {
   TODO verify that Creep has CARRY body part and can handle Energy
   */
 Creep.prototype.pickupDroplets = function(range) {
-  if (!range) throw Error("Missing param range.");
-  if (Game.time % range != 0) return; // Look up every "range" ticks
-  const droplets = this.pos.findInRange(FIND_DROPPED_RESOURCES, range);
-  if (droplets.length) {
-    const pickup = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-      filter: r => r.resourceType == RESOURCE_ENERGY
-    });
-    // Pickup only worthing droplets
-    if (pickup.amount >= 50 && this.pickup(pickup) == ERR_NOT_IN_RANGE) this.moveTo(pickup);
-    return; // Prioritize current operation
+  if (!range) throw Error("Missing param int range.");
+
+  let droplet;
+  let pickup;
+  const threshold = 50;
+
+  // If droplet in memory...
+  if (this.remember('droplet_id')) {
+    droplet = Game.getObjectById(this.remember('droplet_id'));
+
+  // ...otherwise randomize lookups
+  } else if (this.ticksToLive % Math.floor(range) != 0) {
+    return;
+  }
+
+  if (!droplet) {
+    const droplets = this.pos.findInRange(FIND_DROPPED_RESOURCES, range);
+    if (droplets.length) {
+      droplet = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+        filter: r => r.resourceType == RESOURCE_ENERGY
+          && r.amount >= threshold // Pickup only worthing droplets
+      });
+    }
+  }
+  // if (droplet) pickup = droplet.amount;
+  if (droplet && this.pickup(droplet) == ERR_NOT_IN_RANGE) {
+    if (COMICS) this.say('$$$');
+    this.remember('droplet_id', droplet.id);
+    this.moveTo(droplet);
+    return true;
+
+  } else {
+    if (droplet) console.log(span(GRAY, this.name + ' recovered ') + span(YELLOW, droplet.amount) + span(GRAY, ' dropped unit(s) of Energy'));
+    this.forget('droplet_id');
+    return false;
+  }
+}
+
+/**
+  Effects: If fatigued, the Creep is allowed to place a ConstructionSite marker for building a STRUCTURE_ROAD
+  @param fatigue int threshold for placing a road marker
+  TODO correlate fatigue to MOVE body parts
+  */
+Creep.prototype.requestRoad = function(fatigue) {
+  if (fatigue === undefined) throw Error("Missing param int fatigue.")
+  if (this.fatigue > fatigue) {
+    if (COMICS) this.say("Road!");
+    this.pos.createConstructionSite(STRUCTURE_ROAD);
+    return;
   }
 }

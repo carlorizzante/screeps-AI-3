@@ -21,6 +21,7 @@ module.exports = {
       If out of charge and in Workroom
       */
     } else if (!creep.isCharged() && room == workroom) {
+      if (creep.pickupDroplets(20)) return;
       const source = creep.getEnergy(useStorage, useContainers, useSources);
 
     /**
@@ -34,6 +35,7 @@ module.exports = {
       If out of charge and not in Workroom
       */
     } else if (!creep.isCharged() && room != workroom) {
+      if (creep.pickupDroplets(10)) return;
       const exit = creep.room.findExitTo(workroom);
       creep.moveTo(creep.pos.findClosestByPath(exit));
     }

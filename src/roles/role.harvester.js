@@ -14,8 +14,8 @@ module.exports = {
   run: creep => {
 
     const room = creep.room.name;
-    const homeroom = creep.memory.homeroom;
-    const workroom = creep.memory.workroom;
+    const homeroom = creep.remember('homeroom');
+    const workroom = creep.remember('workroom');
 
     /**
       If charged and in Homeroom
@@ -30,6 +30,7 @@ module.exports = {
       If out of charge and in Workroom
       */
     } else if (!creep.isCharged() && room == workroom) {
+      if (creep.pickupDroplets(20)) return;
       const source = creep.getEnergy(useStorage, useContainers, useSources);
 
       // Reset Workroom is no Active Source found
@@ -46,6 +47,7 @@ module.exports = {
       If out of charge and not in Workroom
       */
     } else if (!creep.isCharged() && room != workroom) {
+      if (creep.pickupDroplets(10)) return;
       const exit = creep.room.findExitTo(workroom);
       creep.moveTo(creep.pos.findClosestByPath(exit));
     }

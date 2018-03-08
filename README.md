@@ -1,5 +1,5 @@
 # Screeps!
-Release 3.6.0 - Codename Limiting Factor
+Release 3.7.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
 
@@ -18,7 +18,10 @@ Launch the Watch task to validate your Javascript, and the Update task to update
 
 ## Flaws
 
-## Units
+## Units Tier 1
+Creeps in Tier 1 are somehow exchangeable, they are all composed with the same ration of body parts, WORK:CARRY:MOVE, there in principle they can be interchangeable and if required can cover multiple roles.
+
+Some Units in Tier 1 are also able to span multiple rooms.
 
 ### Builders
 Builders repair and build structures, alternatively can recharge structures like Extensions and Towers, and finally, if none of the above is necessary, they switch into Upgrader mode.
@@ -29,8 +32,17 @@ Harvesters quite sophisticated behaviour, 1. harvest energy from Energy Sources,
 ### Upgraders
 Upgraders take care exclusively of upgrading the Room Controller.
 
+## Units Tier 2
+Creeps in Tier 2 are more specialized. Haulers and Miners work in synergy. Heroes are the what brings additional resources to the Home room.
+
 ### Miners
 Miners are all about extraction, optimized to extract 3000 unit of Energy right before the regeneration of the Energy Source. In order to do so, they lock on an Energy Source for the entire duration of their life.
+
+### Haulers
+Haulers take care of carrying Energy from Containers nearby Miners, to Spawns, Extensions, and finally Storage. Haulers recharge Towers as well. They do not have any WORK part.
+
+### Heroes
+Heroes are primarily engaged in extracting Energy from nearby rooms. They have more CARRY and MOVE parts than WORK ones, still they are self sufficient able to lay down roads automatically in order to speed up their travel time.
 
 ## Towers
 
