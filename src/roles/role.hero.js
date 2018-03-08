@@ -1,7 +1,7 @@
 // Structures to recharge
 const rechargeSpawns     = true;
 const rechargeExtensions = true;
-const rechargeTowers     = true
+const rechargeTowers     = false
 const rechargeStorage    = true;
 const rechargeContainers = true;
 
@@ -17,22 +17,20 @@ module.exports = {
     const homeroom = creep.remember('homeroom');
     const workroom = creep.remember('workroom');
 
-    creep.requestRoad(6);
+    creep.requestRoad(2);
 
     /**
       If charged and in Homeroom
       */
     if (creep.isCharged() && room == homeroom) {
-      let recharge, build;
-      recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeStorage, rechargeContainers);
-      if (!recharge) build = creep.buildStructure();
-      if (!recharge && !build) require("role.upgrader").run(creep); // fallback as Upgrader
+      let recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers);
+      if (!recharge) require("role.upgrader").run(creep); // fallback as Upgrader
 
     /**
       If out of charge and in Workroom
       */
     } else if (!creep.isCharged() && room == workroom) {
-      if (creep.pickupDroplets(20)) return;
+      if (creep.pickupDroplets(10)) return;
       const source = creep.getEnergy(useStorage, useContainers, useSources);
 
       // Reset Workroom is no Active Source found
@@ -42,8 +40,13 @@ module.exports = {
       If charged but not yet in Homeroom
       */
     } else if (creep.isCharged() && room != homeroom) {
-      const exit = creep.room.findExitTo(homeroom);
-      creep.moveTo(creep.pos.findClosestByPath(exit)); // TODO: optimize path
+      let repair, build, recharge;
+      repair = creep.repairStructure(6);
+      if (!repair) build = creep.buildStructure();
+      if (!repair && !build) {
+        const exit = creep.room.findExitTo(homeroom);
+        creep.moveTo(creep.pos.findClosestByPath(exit)); // TODO: optimize path
+      }
 
     /**
       If out of charge and not in Workroom

@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.7.0] - 2018-03-08
+## [3.8.0] 2018-03-08
+### Added
+- src/proto/prototype.creep.js, fatigue() method now evaluate true if fatigue >= threshold
+- src/proto/prototype.spawn.js, Spawns can now spawn Heroes
+- src/roles/role.harvester.js, Harvesters can now request roads if fatigue >= 6
+- src/roles/role.hero.js, Heroes added to the pool of available units
+
+## [3.7.0] 2018-03-08
 ### Added
 - src/roles/role.hauler.js, added Haulers to the pool of available Creeps
 
@@ -20,7 +27,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Edited
 - README.md, Added Haulers and Heroes description.
 
-## [3.6.0] - 2018-03-08
+## [3.6.0] 2018-03-08
 ### Added
 - src/prototype.creep.js, added pickupDroplets() method, all Creeps can now pickup dropped resources
                           added isLocked() method, used by Miners to lock on to an Energy Source
@@ -31,11 +38,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Edited
 - README.md, added Miners to list of Units
 
-## [3.4.1] - 2018-03-07
+## [3.4.1] 2018-03-07
 ### Added
 - src/proto/prototype.creep.js, remember() and forget() methods for Creeps' memory management
 
-## [3.4.0] - 2018-03-07
+## [3.4.0] 2018-03-07
 ### Added
 - src/proto/prototype.tower.js, first iteration on Towers' logic
 
@@ -47,7 +54,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - package.js, added a bit more info about the project
 - README.js, better docs about using Grunt within the current project
 
-## [3.3.0] - 2018-03-07
+## [3.3.0] 2018-03-07
 ### Changed
 - src/proto/prototype.creep.js, Creeps can now store and use target Structure and Source in Memory
 - src/proto/prototype.spawn.js, roles pulled from config.js
@@ -56,7 +63,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - src/reporter.js, stylistic improvements
 - README.md, additional content about Tier 1 Creeps
 
-## [3.2.0] - 2018-03-06
+## [3.2.0] 2018-03-06
 ### Added
 - src/reporter.js, basic reporting, to be expanded
 
@@ -69,7 +76,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
                                Harvesters use extra energy for building Structures
 - src/main.js, implements Reporter every 50 ticks
 
-## [3.1.0] - 2018-03-06
+## [3.1.0] 2018-03-06
 ### Added
 - src/proto/prototype.creep.js, basic functionalities
 - src/proto/prototype.spawn.js, basic functionalities
@@ -82,7 +89,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - src/main.js, runs logic for Spawns and Creeps
 
-## [3.0.0] - 2018-03-05
+## [3.0.0] 2018-03-05
 ### Initial commit
 - src/main.js (empty)
 - .gitignore

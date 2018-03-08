@@ -16,7 +16,7 @@ const PURPLE  = '#800080';
 
 // Alternate
 const AQUAMARINE = '#3498DB';
-const DARKPURPLE     = '#8E44AD';
+const DARKPURPLE = '#8E44AD';
 
 // Margarita @link http://www.colourlovers.com/palette/4559326/Margarita
 const SAYSHELLO   = '#FADD99';

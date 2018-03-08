@@ -1,5 +1,5 @@
 # Screeps!
-Release 3.7.0 - Codename Limiting Factor
+Release 3.8.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
 
@@ -43,6 +43,12 @@ Haulers take care of carrying Energy from Containers nearby Miners, to Spawns, E
 
 ### Heroes
 Heroes are primarily engaged in extracting Energy from nearby rooms. They have more CARRY and MOVE parts than WORK ones, still they are self sufficient able to lay down roads automatically in order to speed up their travel time.
+
+## Tier 3
+Tactical Units, defensive/reactive warfare.
+
+## Tier 4
+Strategic Units, grand operations.
 
 ## Towers
 

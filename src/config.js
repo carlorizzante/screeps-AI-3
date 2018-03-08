@@ -45,9 +45,8 @@ module.exports = {
   harvesters_cap: function(room, creepsCount) { // Range [0, 8]
     const haulers = creepsCount[HAULER] ? creepsCount[HAULER] : 0;
     const miners = creepsCount[MINER] ? creepsCount[MINER] : 0;
-    const tier2 =  haulers + miners;
     const sources = room.find(FIND_SOURCES_ACTIVE);
-    return 4 * sources.length - tier2;
+    return 4 * sources.length - haulers - miners * 2;
   },
   builders_cap: function(room) { // Range [0, 4]
     const constructionSites = room.find(FIND_CONSTRUCTION_SITES);

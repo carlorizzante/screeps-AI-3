@@ -7,7 +7,7 @@ const roles = {
 
   // Tier 2
   hauler: require("role.hauler"),
-  // hero: require("role.hero"),
+  hero: require("role.hero"),
   miner: require("role.miner"),
 
   // Tier 3
@@ -26,6 +26,7 @@ const YELLOW  = '#FFFF00';
 const span = require("reporter").span;
 
 Creep.prototype.logic = function() {
+
   const homeroom = this.remember('homeroom');
   if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
   if (this.room.name != homeroom && this.recycleAt(100)) return; // Recycle at 100 ticks otherwise
@@ -128,7 +129,7 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
     storage = Game.getObjectById(this.remember('storage_id'));
 
     // If storage empty, reset and start over
-    if (storage.store[RESOURCE_ENERGY] <= threshold) {
+    if (storage && storage.store[RESOURCE_ENERGY] <= threshold) {
       this.forget('storage_id');
       storage = null;
     }
@@ -151,7 +152,7 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
     source = Game.getObjectById(this.remember('source_id'));
 
     // If Source exhausted, reset and start over
-    if (source.energy <= 0) {
+    if (source && source.energy <= 0) {
       this.forget('source_id');
       source = null;
     }
@@ -344,7 +345,7 @@ Creep.prototype.pickupDroplets = function(range) {
     droplet = Game.getObjectById(this.remember('droplet_id'));
 
   // ...otherwise randomize lookups
-  } else if (this.ticksToLive % Math.floor(range) != 0) {
+} else if (this.ticksToLive % Math.floor(range * 2) != 0) {
     return;
   }
 
@@ -373,12 +374,12 @@ Creep.prototype.pickupDroplets = function(range) {
 
 /**
   Effects: If fatigued, the Creep is allowed to place a ConstructionSite marker for building a STRUCTURE_ROAD
-  @param fatigue int threshold for placing a road marker
+  @param fatigue int threshold of fatigue above which Creep should place a road marker
   TODO correlate fatigue to MOVE body parts
   */
 Creep.prototype.requestRoad = function(fatigue) {
   if (fatigue === undefined) throw Error("Missing param int fatigue.")
-  if (this.fatigue > fatigue) {
+  if (this.fatigue >= fatigue) {
     if (COMICS) this.say("Road!");
     this.pos.createConstructionSite(STRUCTURE_ROAD);
     return;

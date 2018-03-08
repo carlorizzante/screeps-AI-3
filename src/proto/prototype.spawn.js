@@ -1,4 +1,6 @@
 const config = require("config");
+const roles  = config.roles;
+const span   = require("reporter").span;
 
 const SILVER      = '#C0C0C0';
 const GRAY        = '#808080';
@@ -23,9 +25,6 @@ const TIER2_ENERGY_CAP = config.tier2_energy_cap();
 
 const VERBOSE = true;
 const DEBUG   = false;
-
-const roles = config.roles;
-const span = require("reporter").span;
 
 StructureSpawn.prototype.logic = function() {
 
@@ -80,15 +79,8 @@ StructureSpawn.prototype.logic = function() {
   } else if (creepsInRoom[HAULER] < HAULER_CAP) {
     this.spawnCustomCreep(HAULER, this.room.name, this.room.name);
 
-  // Temporary block
-  } else if (true) {
-    return;
-
-  /**
-    Spawn Hero to max energy and assign it to a nearby room
-    */
-  } else if (this.room.energyAvailable == room.energyCapacityAvailable) {
-    this.spawnCustomCreep(HERO, this.room.name, _.sample(adjacentRooms));
+  } else if (this.room.energyAvailable == this.room.energyCapacityAvailable) {
+    this.spawnCustomCreep(HERO, this.room.name, _.sample(this.getExits()));
   }
 }
 
@@ -149,13 +141,13 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
   }
 
   if (role == HERO) {
-    // 20% WORK
+    // 25% WORK
     // 40% CARRY
-    // 40% MOVE
+    // 35% MOVE
     use = _.min([TIER2_ENERGY_CAP, this.room.energyAvailable]);
-    energyUsed += addParts(WORK, 100, Math.floor(use * 0.20), skills);
+    energyUsed += addParts(WORK, 100, Math.floor(use * 0.25), skills);
     energyUsed += addParts(CARRY, 50, Math.floor(use * 0.40), skills);
-    energyUsed += addParts(MOVE,  50, Math.floor(use * 0.40), skills);
+    energyUsed += addParts(MOVE,  50, Math.floor(use * 0.35), skills);
   }
 
   if (role == MINER) { // cost 700
@@ -215,6 +207,22 @@ StructureSpawn.prototype.creepsInRoom = function() {
   }
   if (DEBUG) for (let role in count) console.log(role, count[role]);
   return count;
+}
+
+/**
+  Returns an array with the name of the adjacent rooms
+  @returns Array of String, exits to rooms that do not belong to the player
+  */
+StructureSpawn.prototype.getExits = function() {
+  const adjacentRooms = Game.map.describeExits(this.room.name);
+  const forbiddenRooms = Memory.spawns;
+  let rooms = [];
+  for (let key in adjacentRooms) {
+    rooms.push(adjacentRooms[key]);
+  }
+  forbiddenRooms.push('W6N4'); // DEFCON 4 TODO Learn from environment and add/remove automatically
+  rooms = rooms.filter(r => forbiddenRooms.indexOf(r) < 0);
+  return rooms; // ['W3N5', 'W2N4', ...]
 }
 
 /**

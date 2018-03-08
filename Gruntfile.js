@@ -1,18 +1,20 @@
 module.exports = function(grunt) {
 
-  require("load-grunt-tasks")(grunt);
+  require('load-grunt-tasks')(grunt);
 
   const config = {
-    src: ["Gruntfile.js", "src/**/*.js"],
+    src: ['Gruntfile.js', 'src/**/*.js'],
 
-    // In game > Script, bottom of it, click on "Open local folder", copy and paste in here as "dest"
-    dest: "/Users/carlorizzante/Library/Application Support/Screeps/scripts/127_0_0_1___21025/default",
+    // In game > Script, bottom of it, click on 'Open local folder', copy and paste in here as 'dest'
+    dest: '/Users/carlorizzante/Library/Application Support/Screeps/scripts/127_0_0_1___21025/default',
 
     // Temporary folder used by Grunt to sync all files into the game.
-    temp: "temp/"
+    temp: 'temp/'
   }
 
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+
     jshint: {
       files: config.src,
       options: {
@@ -26,15 +28,15 @@ module.exports = function(grunt) {
       main: {
         files: [{
           cwd: config.temp,
-          src: ["**"],
+          src: ['**'],
           dest: config.dest
         }],
         verbose: true
       }
     },
     clean: {
-      // AI files are first copied into a temporary folder "temp"
-      // and later synchronized with the "default" folder in game.
+      // AI files are first copied into a temporary folder 'temp'
+      // and later synchronized with the 'default' folder in game.
       contents: [config.temp],
       options: {
         force: true
@@ -55,7 +57,7 @@ module.exports = function(grunt) {
     },
     watch: {
       files: config.src,
-      tasks: ["jshint"]
+      tasks: ['jshint']
     },
     wait: {
       options: {
@@ -74,6 +76,6 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask("default", ["jshint"]);
-  grunt.registerTask("update", ["clean", "wait", "copy", "wait", "sync"]);
+  grunt.registerTask('default', ['jshint']);
+  grunt.registerTask('update', ['clean', 'wait', 'copy', 'wait', 'sync']);
 }
