@@ -5,6 +5,8 @@ const useSources         = true;
 const rechargeSpawns     = false;
 const rechargeExtensions = true;
 const rechargeTowers     = true
+const rechargeContainers = false
+const rechargeStorage    = false
 
 module.exports = {
   run: creep => {
@@ -21,7 +23,7 @@ module.exports = {
       let repair, build, recharge;
       repair = creep.repairStructure(6);
       if (!repair) build = creep.buildStructure();
-      if (!repair && !build) recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers);
+      if (!repair && !build) recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeContainers, rechargeStorage);
       if (!repair && !build && !recharge) require("role.upgrader").run(creep); // fallback as Upgrader
 
     /**

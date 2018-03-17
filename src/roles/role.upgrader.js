@@ -10,6 +10,8 @@ module.exports = {
     const homeroom = creep.memory.homeroom;
     const workroom = creep.memory.workroom;
 
+    creep.requestRoad(4);
+
     /**
       If charged and in Homeroom
       */

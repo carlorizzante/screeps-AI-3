@@ -1,6 +1,6 @@
 {
   "name": "screeps-AI-3",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "description": "AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

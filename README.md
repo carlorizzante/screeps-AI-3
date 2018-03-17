@@ -1,7 +1,10 @@
 # Screeps!
-Release 3.9.0 - Codename Limiting Factor
+Release 3.10.0 - Codename Limiting Factor
 
 AI for Screeps, version 3, completed of Grunt file and tasks for stand alone / private server play.
+
+## Note
+Project is on hold due to a new rewriting of the entire codebase in order to implement states, room objects, and a more centralized AI.
 
 ## Grunt
 Grunt can copy all files directly into the "default" folder of the game. In order to do so, you need to update one line in the Gruntfile.js file.
@@ -46,6 +49,9 @@ Heroes are primarily engaged in extracting Energy from nearby rooms. They have m
 
 ## Tier 3
 Tactical Units, defensive/reactive warfare.
+
+### Claimer
+Claimers do claim Controllers in new room.
 
 ## Tier 4
 Strategic Units, grand operations.

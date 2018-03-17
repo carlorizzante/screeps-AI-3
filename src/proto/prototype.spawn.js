@@ -54,6 +54,11 @@ StructureSpawn.prototype.logic = function() {
   // const GUARD_CAP   = config.guard_cap(room);
   // const CLAIMER_CAP = 0;
 
+  // TODO Queue for new Spawn
+  // [UPGRADER, HERO, UPGRADER, HERO, ...] times n until Spawn is up
+
+  // TODO Automatic Safe-mode on Controllers
+
   /**
     Spawn Tier1 Creeps
     */
@@ -64,7 +69,10 @@ StructureSpawn.prototype.logic = function() {
     this.spawnCustomCreep(UPGRADER, this.room.name, this.room.name);
 
   } else if (creepsInRoom[BUILDER] < BUILDERS_CAP) {
-    this.spawnCustomCreep(BUILDER, this.room.name, this.room.name);
+    const room = _.sample([this.room.name, this.room.name, this.room.name, 'W4N2']);
+    // this.spawnCustomCreep(BUILDER, this.room.name, this.room.name);
+    // this.spawnCustomCreep(BUILDER, 'W4N2', 'W4N2');
+    this.spawnCustomCreep(BUILDER, room, room);
 
   /**
     Creeps Tier 2 allowed only if enough energyCapacityAvailable
@@ -80,7 +88,9 @@ StructureSpawn.prototype.logic = function() {
     this.spawnCustomCreep(HAULER, this.room.name, this.room.name);
 
   } else if (this.room.energyAvailable == this.room.energyCapacityAvailable) {
-    this.spawnCustomCreep(HERO, this.room.name, _.sample(this.getExits()));
+    const room = _.sample([this.room.name, this.room.name, this.room.name, 'W4N2']);
+    // this.spawnCustomCreep(HERO, this.room.name, _.sample(this.getExits()));
+    this.spawnCustomCreep(HERO, room, room);
   }
 }
 
@@ -164,7 +174,7 @@ StructureSpawn.prototype.spawnCustomCreep = function(role, homeroom, workroom, t
 
   // Spawn new creep
   if (DEBUG) console.log("Using", use, "to spawn", role);
-  let name = role + energyUsed + "-" + Game.time + "-" + homeroom;
+  let name = role + energyUsed + "-" + Game.time + "-" + this.room.name;
   const result = Game.spawns[this.name].spawnCreep(skills, name, {
     memory: {
       role: role,
@@ -258,7 +268,7 @@ function listSkills(skills) {
   */
 function calcCreepCost(parts) {
   "use strict";
-  
+
   let totalCost = 0;
   const bodyPartCosts = {
     move:    50,

@@ -2,8 +2,8 @@
 const rechargeSpawns     = true;
 const rechargeExtensions = true;
 const rechargeTowers     = true
-const rechargeStorage    = true;
 const rechargeContainers = false;
+const rechargeStorage    = true;
 
 // Withdraw Energy exclusively from Containers
 const useStorage         = false;
@@ -13,11 +13,11 @@ const useSources         = false;
 module.exports = {
   run: creep => {
     "use strict";
-    
-    creep.requestRoad(2);
+
+    creep.requestRoad(4);
 
     if (creep.isCharged()) {
-      const recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeStorage, rechargeContainers);
+      const recharge = creep.rechargeStructure(rechargeSpawns, rechargeExtensions, rechargeTowers, rechargeContainers, rechargeStorage);
     } else {
       if (creep.pickupDroplets(20)) return;
       creep.getEnergy(false, true, false);

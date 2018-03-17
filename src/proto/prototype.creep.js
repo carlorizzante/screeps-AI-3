@@ -14,7 +14,7 @@ const roles = {
   miner: require(rolesdir + 'role.miner'),
 
   // Tier 3
-  // claimer: require("role.claimer"),
+  claimer: require(rolesdir + 'role.claimer'),
   // defender: require("role.defender"),
   // guard: require("role.guard")
 };
@@ -30,31 +30,39 @@ const span = require(srcdir + 'reporter').span;
 Creep.prototype.logic = function() {
   "use strict";
 
+  // No need to use resources before being spawned
+  if (this.spawning) return;
+
+  // this.forget('structure_id');
+  // this.forget('storage_id');
+  // this.forget('source_id');
+
   const homeroom = this.remember('homeroom');
   if (this.room.name == homeroom && this.recycleAt(30)) return;  // Recycle at 30 ticks in Homeroom
-  if (this.room.name != homeroom && this.recycleAt(100)) return; // Recycle at 100 ticks otherwise
+  if (this.room.name != homeroom && this.recycleAt(100)) this.remember('charged', true); // Go home
   roles[this.memory.role].run(this);
 }
 
 /**
   Given a key, returns from Creep's memory the corresponding value if exists,
   otherwise, if key does not exist, stores key/value
-  @param key String
-  @param value Json
+  Modifies Creep.memory
+  @param string key
+  @param Json value
   @return json value
   */
 Creep.prototype.remember = function(key, val) {
   "use strict";
   if (typeof key != 'string') throw Error("key has to be a string.");
   if (val && !this.validateValue(val)) throw Error("val has to be a json valid entry.");
-  if (val === undefined || val === null) return this.memory[key];
+  if (val === undefined) return this.memory[key];
   this.memory[key] = val;
   return val;
 }
 
 /**
   Given a key, delete the key and its associated value from the Creep's memory
-  @param key String
+  @param string key
   @return void
   */
 Creep.prototype.forget = function(key) {
@@ -72,8 +80,8 @@ Creep.prototype.validateValue = function(data) {
 
 /**
   Returns true if the Creep is fully charged, false otherwise
-  Modifies this.memory.charged = Boolean
-  @returns Boolean, Creep's charged state, true is ready for duty, false needs to recharge
+  Modifies this.memory
+  @returns boolean, Creep's charged state, true is ready for duty, false needs to recharge
   */
 Creep.prototype.isCharged = function() {
   "use strict";
@@ -86,9 +94,9 @@ Creep.prototype.isCharged = function() {
 }
 
 /**
-  Returns true if conditions are met, false otherwise
+  Returns state locked
+  Modifies Creep.memory
   Used by Miners to lock up onto Energy Sources and the adjacent Container
-  @param
   @returns Boolean, true if it'is locked, false othewise
   TODO refactor to enable different type of Source/Minerals
   */
@@ -119,10 +127,11 @@ Creep.prototype.isLocked = function() {
 
 /**
   Returns true if a source of Energy is found, false otherwise
+  Modifies Creep.memory
   @param useStorage Boolean
   @param useContainers Boolean
   @param useSource Boolean
-  @returns Boolean, true for found, false otherwise
+  @returns Storage/Container or Energy Source if found, otherwise undefined
   */
 Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   "use strict";
@@ -133,30 +142,24 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   let source;  // Energy Sources require harvest()
   let storage; // Containers and Storage require withdraw()
 
-  // First check that Creep has already a target Storage or Container
+  // First check that Creep has already a target, Storage or Container
   if (this.remember('storage_id')) {
     storage = Game.getObjectById(this.remember('storage_id'));
-
-    // If storage empty, reset and start over
-    if (storage && storage.store[RESOURCE_ENERGY] <= threshold) {
-      this.forget('storage_id');
-      storage = null;
-    }
   }
 
-  // Else, prioritize Storage...
+  // Else, see if there is anything in the Room's Storage...
   if (!storage && useStorage && this.room.storage && this.room.storage.store.energy >= threshold) {
     storage = this.room.storage;
   }
 
-  // ...or Containers
+  // ...or in Containers nearby
   if (!storage && useContainers) {
     storage = this.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: s => s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
     });
   }
 
-  // Otherwise check that Creep has already a target Source
+  // If still nothing found, see if Creep stored an Energy Source id
   if (!storage && useSource && this.remember('source_id')) {
     source = Game.getObjectById(this.remember('source_id'));
 
@@ -168,26 +171,34 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   }
 
   // If no target Source look for a nearby one
-  if (!source && useSource) {
+  if (!storage && !source && useSource) {
     source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE, {
       filter: s => s.energy >= 0 // Only if Source has somehow enough to harvest
     });
+  }
+
+  let result, move;
+
+  // Prioritize Storage and Containers over Sources
+  if (storage) {
+    result = this.withdraw(storage, RESOURCE_ENERGY);
+    if (result == ERR_NOT_IN_RANGE) move = this.moveTo(storage);
+    if (result == OK || move == ERR_NO_PATH) this.forget('storage_id');
+    if (storage.store[RESOURCE_ENERGY] <= threshold) this.forget('storage_id');
+
+  // Then use Sources
+  } else if (source) {
+    result = this.harvest(source);
+    if (result == ERR_NOT_IN_RANGE) move = this.moveTo(source);
+    if (result == OK || move == ERR_NO_PATH) this.forget('source_id');
+    if (result == ERR_NOT_ENOUGH_RESOURCES) this.forget('source_id');
   }
 
   // If a Storage or Source found, save it and use it at the next tick
   if (storage) this.remember('storage_id', storage.id);
   if (source)  this.remember('source_id', source.id);
 
-  // Prioritize Storage and Containers over Sources
-  if (storage && this.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-    this.moveTo(storage);
-
-  // Then use Sources
-  } else if (source && this.harvest(source) == ERR_NOT_IN_RANGE) {
-    this.moveTo(source);
-  }
-
-  // Return Boolean, found / not found
+  // Return Storage/Container/Source found, or undefined
   return ((useContainers || useStorage) && storage) || (useSource && source);
 }
 
@@ -196,11 +207,11 @@ Creep.prototype.getEnergy = function(useStorage, useContainers, useSource) {
   @param includeSpawns Boolean
   @param includeExtensions Boolean
   @param includeTowers Boolean
-  @param includeStorage Boolean
   @param includeContainers Boolean
+  @param includeStorage Boolean
   @returns Object Structure or null if no Structure found
   */
-Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
+Creep.prototype.findStructure = function(includeSpawns, includeExtensions, includeTowers, includeContainers, includeStorage) {
   "use strict";
 
   if (this.remember('structure_id')) return Game.getObjectById(this.remember('structure_id'));
@@ -213,7 +224,7 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
       || (includeExtensions && s.structureType == STRUCTURE_EXTENSION && s.energy < s.energyCapacity)
       || (includeTowers && s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity)
   });
-  // ...then Towers...
+  // ...then Containers...
   if (!structure && includeContainers) structure = this.pos.findClosestByPath(FIND_STRUCTURES, {
     filter: s => (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < s.storeCapacity)
   });
@@ -231,23 +242,31 @@ Creep.prototype.findStructure = function(includeSpawns, includeExtensions, inclu
 
 /**
   Effects: Creep looks for and recharges a suitable structure in need of Energy
-  @param includeSpawns Boolean
-  @param includeExtensions Boolean
-  @param includeTowers Boolean
-  @param includeStorage Boolean
-  @param includeContainers Boolean
-  @returns Boolean, true if successful, false otherwise
+  @param boolean includeSpawns
+  @param boolean includeExtensions
+  @param boolean includeTowers
+  @param boolean includeContainers
+  @param boolean includeStorage
+  @param boolean resetWorkroom, if true Creep will pick up a nearby room once transfer completed
+  @returns boolean, true if successful, false otherwise
   */
-Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers) {
+Creep.prototype.rechargeStructure = function(includeSpawns, includeExtensions, includeTowers, includeContainers, includeStorage, resetWorkroom) {
   "use strict";
 
   let structure;
 
-  structure = this.findStructure(includeSpawns, includeExtensions, includeTowers, includeStorage, includeContainers);
+  structure = this.findStructure(includeSpawns, includeExtensions, includeTowers, includeContainers, includeStorage);
   if (structure) {
-    let result = this.transfer(structure, RESOURCE_ENERGY);
-    if (result == ERR_NOT_IN_RANGE) result = this.moveTo(structure);
-    if (result == ERR_FULL || result == ERR_NO_PATH) this.forget('structure_id');
+    let result, move;
+    result = this.transfer(structure, RESOURCE_ENERGY);
+    if (result == ERR_NOT_IN_RANGE) move = this.moveTo(structure);
+    if (result == ERR_FULL || move == ERR_NO_PATH) this.forget('structure_id');
+    if (result == OK && this.carry.energy <= 50) {
+      this.forget('structure_id');
+      this.forget('storage_id');
+      this.forget('source_id');
+      if (resetWorkroom) this.changeWorkroom();
+    }
   }
   return structure;
 }
@@ -272,7 +291,7 @@ Creep.prototype.repairStructure = function(range) {
       this.moveTo(structures[0]);
     }
   }
-  return structures.length;
+  return structures[0];
 }
 
 /**
@@ -295,8 +314,8 @@ Creep.prototype.buildStructure = function() {
 /**
   Allows Creeps to move to a nearby rooms if no Energy source is available
   Modifies creep.memory.workroom
-  @param roomname String, the name of the room to use as Workroom
-  @returns String, new Workroom
+  @param string roomname optional, the name of the room to use as Workroom
+  @returns string, new Workroom
   */
 Creep.prototype.changeWorkroom = function(roomname) {
   "use strict";
@@ -308,6 +327,13 @@ Creep.prototype.changeWorkroom = function(roomname) {
   let rooms = [];
   const neighbourhood = Game.map.describeExits(this.room.name);
   const myRooms = Memory.spawns;
+
+  // TODO Forbidden rooms
+  myRooms.push('W4N4'); // Keepers
+  myRooms.push('W5N4'); // Keepers
+  myRooms.push('W6N4'); // Keepers
+
+  if (this.remember('role') != 'hero') myRooms.push('W4N2'); // Too many swamps
 
   for (let key in neighbourhood) rooms.push(neighbourhood[key]);
 
@@ -333,11 +359,14 @@ Creep.prototype.recycleAt = function(threshold) {
     if (COMICS) this.say("#@$");
 
     if (this.room.name != this.remember('homeroom')) {
-      const exit = this.room.findExitTo(this.remember('homeroom'));
+      this.remember('charged', true); // Stop harvesting
+      this.remember('workroom', this.remember('homeroom')); // reset Workroom to be equal to Homeroom
+      const exit = this.room.findExitTo(this.remember('homeroom')); // Start moving toward Homeroom
       this.moveTo(this.pos.findClosestByPath(exit));
-      return
+      return; // That's all
     }
 
+    // Else, look for a Spawn
     const spawn = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
       filter: s => s.structureType == STRUCTURE_SPAWN
     });

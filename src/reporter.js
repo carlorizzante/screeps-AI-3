@@ -1,3 +1,6 @@
+const config = require('./config');
+const roles  = config.roles;
+
 // Basics
 const WHITE   = '#FFFFFF';
 const SILVER  = '#C0C0C0';
@@ -42,7 +45,7 @@ module.exports = {
     const span = this.span;
     const spacer = console.log;
     const liner = function() {
-      console.log(span(GREENPEPPER, '----------------------------------'));
+      console.log(span(GREENPEPPER, '-----------------------------------'));
     }
 
     // Test colors
@@ -75,8 +78,8 @@ module.exports = {
       liner();
 
       let inStorage ;
-      if (room.storage) inStorage = ', ' + room.storage.energy + ' in storage.';
-      if (!room.storage) inStorage = span(GRAY, ', no storage.');
+      if (room.storage) inStorage = room.storage.store.energy + ' energy in storage.';
+      if (!room.storage) inStorage = span(GRAY, 'Room has no storage.');
 
       let extensionsText;
       const extensions = findExtensions(room);
@@ -93,15 +96,26 @@ module.exports = {
       if (towers.length) towersText = towers.length + ' Tower(s) in the room.';
       if (!towers.length) towersText = span(GRAY, 'no Tower(s) in the room.');
 
-      console.log(room.energyAvailable + " of " + room.energyCapacityAvailable + ' available' + inStorage);
+      console.log(room.energyAvailable + " of " + room.energyCapacityAvailable + ' energy available.');
+      console.log(inStorage);
       console.log(extensionsText + ', ' + containersText);
       console.log(towersText);
       // console.log(room.extractors.length + ' Extractor(s) ' + room.extractorContainers.length + ' with a Container');
-    }
 
-    liner();
+      liner();
+    }
     console.log(span(GRAY, Object.keys(rooms).length + ' Room(s) in sight.'));
     console.log(span(GRAY, Object.keys(creeps).length + ' Creep(s) alive.'));
+
+    liner();
+
+    let summary = '';
+    const count = creepsSummary();
+    for (let role in count) {
+      summary += role.slice(0, 3).toUpperCase() + ':' + count[role] + ', ';
+    }
+    console.log(span(GRAY, summary.slice(0, -2)));
+
     liner();
     spacer();
   },
@@ -162,4 +176,31 @@ function findTowers(room) {
   return room.find(FIND_MY_STRUCTURES, {
     filter: s => s.structureType == STRUCTURE_TOWER
   });
+}
+
+/**
+  Returns the count of Creeps in the current room, grouped by roles
+  @param Room room
+  @returns Object, count of each existing role in the current room
+  */
+function creepsInRoom(room) {
+  "use strict";
+
+  const creepsInRoom = room.find(FIND_MY_CREEPS);
+  const count = {}
+  for (let role of roles) {
+    count[role] = _.sum(creepsInRoom, c => c.memory.role == role);
+  }
+  return count;
+}
+
+function creepsSummary() {
+  'use strict';
+  const count = {}
+  for (let name in Game.creeps) {
+    const creep = Game.creeps[name];
+    const role = creep.memory.role;
+    count[role] = count[role] ? count[role] + 1 : 1;
+  }
+  return count;
 }

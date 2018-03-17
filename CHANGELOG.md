@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.10.0] 2018-03-17
+### Added
+- test/constants.test.js, replicates in-game constants
+- test/prototype.creep.test.js, testing for Creep.prototype.*
+- src/roles/role.claimer.js, added Claimer unit
+
+### Changed
+- src/proto/prototype.creep.js, refactored getEnergy(), improvements
+                                refactored findStructure(), reordered params
+                                refactored rechargeStructure(), added params resetWorkroom
+                                refactored recycleAt(), improvements
+- src/proto/prototype.spawn.js, hardcoded (temporary) building support to room 'W4N2'
+- src/roles/role.hauler.js, added requestRoad() with arg to 4
+- src/roles/role.harvester.js, added param resetWorkroom to rechargeStructure()
+                               changed requestRoad() arg to 10
+- src/roles/role.hero.js, added param resetWorkroom to rechargeStructure()
+                          changed requestRoad() arg to 6
+- src/reporter.js, minimal improvements to the printed output
+
+
 ## [3.9.0] 2018-03-09
 ### Added
 - src/timers.js, collection of utilities to track times in ticks
